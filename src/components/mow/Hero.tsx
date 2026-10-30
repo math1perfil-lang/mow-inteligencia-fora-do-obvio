@@ -19,7 +19,7 @@ export function Hero() {
           MOW® — Estúdio de soluções
         </p>
 
-        <h1 id="hero-title" className="display text-[clamp(3.4rem,13.5vw,13rem)]">
+        <h1 id="hero-title" className="display text-[clamp(3.9rem,13.5vw,13rem)]">
           <span className="rise-line"><span style={{ animationDelay: "100ms" }}>Inteligência</span></span>
           <span className="rise-line"><span style={{ animationDelay: "220ms" }}>fora do</span></span>
           <span className="rise-line">
@@ -47,7 +47,7 @@ export function Hero() {
         <a href="#manifesto" className="eyebrow text-muted-foreground transition-colors hover:text-foreground">
           Descubra a MOW ↓
         </a>
-        <span className="eyebrow text-muted-foreground">Inteligência fora do óbvio</span>
+        <span className="eyebrow hidden text-muted-foreground sm:inline">Inteligência fora do óbvio</span>
       </div>
     </section>
   );

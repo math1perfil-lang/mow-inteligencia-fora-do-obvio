@@ -21,7 +21,8 @@ export function Contact() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const raw = {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
@@ -46,7 +47,7 @@ export function Contact() {
       if (res.ok) {
         setStatus("ok");
         setMsg("Mensagem enviada. Responderemos em breve.");
-        e.currentTarget?.reset();
+        form.reset();
       } else {
         setStatus("error");
         setMsg(res.error);

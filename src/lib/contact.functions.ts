@@ -23,7 +23,7 @@ export const sendContact = createServerFn({ method: "POST" })
     // Spam: honeypot filled or submitted too fast — pretend success silently.
     if (data.website || data.elapsed < 2500) return { ok: true };
 
-    const endpoint = process.env.CONTACT_WEBHOOK_URL;
+    const endpoint = process.env['CONTACT_WEBHOOK_URL'];
     if (!endpoint) {
       console.error("CONTACT_WEBHOOK_URL is not configured");
       return { ok: false, error: "O envio de mensagens ainda não está configurado. Tente novamente em breve." };

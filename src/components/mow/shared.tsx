@@ -2,13 +2,13 @@ import { useEffect, useRef, type ReactNode } from "react";
 import logo from "@/assets/mow-logo.png.asset.json";
 import { cn } from "@/lib/utils";
 
-export const NAV = [
-  { href: "#inicio", label: "Início" },
-  { href: "#o-que-fazemos", label: "O que fazemos" },
-  { href: "#projetos", label: "Projetos" },
-  { href: "#sobre", label: "Sobre" },
-  { href: "#contato", label: "Contato" },
-] as const;
+import { useLang } from "@/i18n/context";
+
+const NAV_HREFS = ["#inicio", "#o-que-fazemos", "#projetos", "#sobre", "#contato"] as const;
+export function useNav() {
+  const { t } = useLang();
+  return NAV_HREFS.map((href, i) => ({ href, label: t.nav[i] }));
+}
 
 /** Official MOW logo. `tone="dark"` renders it black for light backgrounds. */
 export function Logo({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {

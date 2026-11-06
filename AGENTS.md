@@ -11,3 +11,4 @@
 
 - Landing is one page (`src/routes/index.tsx`) composed of section components in `src/components/mow/`; editable content (projects, social links, privacy URL) lives in `src/content/projects.ts` so it can be updated without touching layout.
 - Contact form posts via server function `src/lib/contact.functions.ts` to the URL in the `CONTACT_WEBHOOK_URL` secret (e.g. a Formspree endpoint); without it the form shows a clear error instead of faking success.
+- i18n: UI strings live in src/i18n/dict.ts (pt/en/es), provided via LangProvider in the index route; choice saved in localStorage. Why: whole-site language switch without routing changes.

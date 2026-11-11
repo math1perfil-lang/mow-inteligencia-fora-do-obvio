@@ -4,6 +4,8 @@ import { Hero } from "@/components/mow/Hero";
 import { About, Difference, Manifesto, Projects, WhatWeDo } from "@/components/mow/Sections";
 import { Contact } from "@/components/mow/Contact";
 import { Footer } from "@/components/mow/Footer";
+import { LangProvider, useLang } from "@/i18n/context";
+import { LanguagePicker } from "@/components/mow/Language";
 
 const TITLE = "MOW — Inteligência fora do óbvio";
 const DESC =
@@ -41,9 +43,19 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
+    <LangProvider>
+      <Page />
+      <LanguagePicker />
+    </LangProvider>
+  );
+}
+
+function Page() {
+  const { t } = useLang();
+  return (
     <>
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-foreground focus:px-4 focus:py-2 focus:text-background">
-        Pular para o conteúdo
+        {t.skip}
       </a>
       <Header />
       <main id="conteudo">

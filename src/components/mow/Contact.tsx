@@ -3,21 +3,23 @@ import { useServerFn } from "@tanstack/react-start";
 import { contactSchema, sendContact } from "@/lib/contact.functions";
 import { Reveal } from "./shared";
 import { cn } from "@/lib/utils";
+import { useLang } from "@/i18n/context";
 
 type Field = "name" | "email" | "company" | "subject" | "message";
-const FIELDS: { id: Field; label: string; type?: string; optional?: boolean; auto?: string }[] = [
-  { id: "name", label: "Nome", auto: "name" },
-  { id: "email", label: "E-mail", type: "email", auto: "email" },
-  { id: "company", label: "Empresa", optional: true, auto: "organization" },
-  { id: "subject", label: "Assunto" },
+const FIELDS: { id: Exclude<Field, "message">; type?: string; optional?: boolean; auto?: string }[] = [
+  { id: "name", auto: "name" },
+  { id: "email", type: "email", auto: "email" },
+  { id: "company", optional: true, auto: "organization" },
+  { id: "subject" },
 ];
 
 export function Contact() {
   const send = useServerFn(sendContact);
+  const { t } = useLang();
   const started = useRef(Date.now());
-  const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<Field, true>>>({});
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState<"ok" | "not_configured" | "send_failed" | "network">("ok");
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,8 +36,8 @@ export function Contact() {
     };
     const parsed = contactSchema.safeParse(raw);
     if (!parsed.success) {
-      const errs: Partial<Record<Field, string>> = {};
-      for (const iss of parsed.error.issues) errs[iss.path[0] as Field] ??= iss.message;
+      const errs: Partial<Record<Field, true>> = {};
+      for (const iss of parsed.error.issues) errs[iss.path[0] as Field] = true;
       setErrors(errs);
       setStatus("idle");
       return;
@@ -46,7 +48,7 @@ export function Contact() {
       const res = await send({ data: parsed.data });
       if (res.ok) {
         setStatus("ok");
-        setMsg("Mensagem enviada. Responderemos em breve.");
+        setMsg("ok");
         form.reset();
       } else {
         setStatus("error");
@@ -54,7 +56,7 @@ export function Contact() {
       }
     } catch {
       setStatus("error");
-      setMsg("Não foi possível enviar agora. Tente novamente.");
+      setMsg("send_failed");
     }
   }
 
@@ -66,18 +68,18 @@ export function Contact() {
       <div className="mx-auto grid w-full max-w-[1440px] gap-16 px-5 md:grid-cols-12 md:px-10">
         <div className="md:col-span-6">
           <Reveal>
-            <p className="eyebrow text-muted-foreground">05 / Contato</p>
+            <p className="eyebrow text-muted-foreground">{t.c.eyebrow}</p>
             <h2 id="contact-title" className="display mt-8 text-[clamp(2.8rem,7.5vw,7rem)]">
-              Tem algo fora do óbvio em mente?
+{t.c.title}
             </h2>
             <p className="mt-8 max-w-md text-base leading-relaxed text-muted-foreground md:text-lg">
-              Uma ideia, um desafio ou uma oportunidade? Vamos descobrir até onde ela pode chegar.
+{t.c.text}
             </p>
             <a
               href="#form-nome"
               className="mt-10 inline-flex h-12 items-center border border-foreground bg-foreground px-6 text-sm font-medium text-background transition-colors hover:bg-transparent hover:text-foreground"
             >
-              Vamos conversar ↗
+{t.talk}
             </a>
           </Reveal>
         </div>
@@ -87,8 +89,8 @@ export function Contact() {
             {FIELDS.map((f) => (
               <div key={f.id}>
                 <label htmlFor={`form-${f.id === "name" ? "nome" : f.id}`} className="eyebrow text-muted-foreground">
-                  {f.label}
-                  {f.optional && " (opcional)"}
+                  {t.c.fields[f.id]}
+                  {f.optional && t.c.optional}
                 </label>
                 <input
                   id={`form-${f.id === "name" ? "nome" : f.id}`}
@@ -101,12 +103,12 @@ export function Contact() {
                   className={cn(input, errors[f.id] && "border-destructive")}
                 />
                 {errors[f.id] && (
-                  <p id={`${f.id}-err`} className="mt-2 text-sm text-destructive">{errors[f.id]}</p>
+                  <p id={`${f.id}-err`} className="mt-2 text-sm text-destructive">{t.c.errs[f.id]}</p>
                 )}
               </div>
             ))}
             <div>
-              <label htmlFor="form-message" className="eyebrow text-muted-foreground">Mensagem</label>
+              <label htmlFor="form-message" className="eyebrow text-muted-foreground">{t.c.fields.message}</label>
               <textarea
                 id="form-message"
                 name="message"
@@ -116,7 +118,7 @@ export function Contact() {
                 aria-describedby={errors.message ? "message-err" : undefined}
                 className={cn(input, "resize-none", errors.message && "border-destructive")}
               />
-              {errors.message && <p id="message-err" className="mt-2 text-sm text-destructive">{errors.message}</p>}
+              {errors.message && <p id="message-err" className="mt-2 text-sm text-destructive">{t.c.errs.message}</p>}
             </div>
             {/* Honeypot */}
             <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
@@ -128,7 +130,7 @@ export function Contact() {
               disabled={status === "sending"}
               className="flex h-14 w-full items-center justify-between border border-foreground bg-foreground px-6 text-sm font-medium text-background transition-colors hover:bg-transparent hover:text-foreground disabled:opacity-60"
             >
-              {status === "sending" ? "Enviando…" : "Enviar mensagem"} <span aria-hidden>↗</span>
+              {status === "sending" ? t.c.sending : t.c.send} <span aria-hidden>↗</span>
             </button>
             <p
               id="form-status"
@@ -136,7 +138,7 @@ export function Contact() {
               aria-live="polite"
               className={cn("min-h-5 text-sm", status === "error" ? "text-destructive" : "text-foreground")}
             >
-              {(status === "ok" || status === "error") && msg}
+              {(status === "ok" || status === "error") && (msg === "ok" ? t.c.ok : t.c.server[msg])}
             </p>
           </form>
         </Reveal>

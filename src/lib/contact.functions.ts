@@ -11,7 +11,8 @@ export const contactSchema = z.object({
   elapsed: z.number().min(0),
 });
 
-export type ContactResult = { ok: true } | { ok: false; error: string };
+/** Error codes are translated on the client. */
+export type ContactResult = { ok: true } | { ok: false; error: "not_configured" | "send_failed" | "network" };
 
 /**
  * Forwards the message to the endpoint in CONTACT_WEBHOOK_URL (e.g. a Formspree
@@ -26,7 +27,7 @@ export const sendContact = createServerFn({ method: "POST" })
     const endpoint = process.env['CONTACT_WEBHOOK_URL'];
     if (!endpoint) {
       console.error("CONTACT_WEBHOOK_URL is not configured");
-      return { ok: false, error: "O envio de mensagens ainda não está configurado. Tente novamente em breve." };
+      return { ok: false, error: "not_configured" };
     }
     try {
       const res = await fetch(endpoint, {
@@ -43,11 +44,11 @@ export const sendContact = createServerFn({ method: "POST" })
       });
       if (!res.ok) {
         console.error(`Contact endpoint failed [${res.status}]: ${await res.text()}`);
-        return { ok: false, error: "Não foi possível enviar agora. Tente novamente em instantes." };
+        return { ok: false, error: "send_failed" };
       }
       return { ok: true };
     } catch (e) {
       console.error(e);
-      return { ok: false, error: "Falha de conexão ao enviar. Tente novamente." };
+      return { ok: false, error: "network" };
     }
   });

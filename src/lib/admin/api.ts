@@ -13,6 +13,29 @@ export const AUDIO_BUCKET = "interview-audio";
 
 const sb = () => getSupabase();
 
+/**
+ * Preenche as colunas novas quando o banco ainda não recebeu a migração multi-setor,
+ * para a tela abrir em vez de quebrar. Gravar continua exigindo a migração.
+ */
+function normalizeInterview(row: unknown): Interview {
+  const r = row as Record<string, unknown>;
+  return {
+    ...r,
+    company_name: (r["company_name"] ?? r["store_name"] ?? "") as string,
+    company_size: (r["company_size"] ?? r["store_size"] ?? null) as string | null,
+    sector_key: (r["sector_key"] ?? "revenda_carros") as string,
+    sector_custom_name: (r["sector_custom_name"] ?? "") as string,
+    contact: (r["contact"] ?? "") as string,
+    pain_severity: (r["pain_severity"] ?? null) as number | null,
+  } as Interview;
+}
+
+/** Verdadeiro quando o banco ainda tem as colunas antigas (migração não executada). */
+export function isSchemaOutdated(rows: unknown[]): boolean {
+  const first = rows[0] as Record<string, unknown> | undefined;
+  return first !== undefined && !("sector_key" in first);
+}
+
 // ---------------------------------------------------------------- Autenticação
 
 export async function adminExists(): Promise<boolean> {
@@ -37,7 +60,7 @@ export async function hasAdminRole(userId: string): Promise<boolean> {
 export async function listInterviews(): Promise<Interview[]> {
   const { data, error } = await sb().from("interviews").select("*").order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Interview[];
+  return (data ?? []).map(normalizeInterview);
 }
 
 export async function createInterview(input: {
@@ -55,7 +78,7 @@ export async function createInterview(input: {
     .select("*")
     .single();
   if (error) throw error;
-  return data as Interview;
+  return normalizeInterview(data);
 }
 
 export async function getInterviewBundle(id: string): Promise<InterviewBundle | null> {
@@ -80,7 +103,7 @@ export async function getInterviewBundle(id: string): Promise<InterviewBundle | 
       no_difference: row.no_difference,
     };
   }
-  return { interview: iv.data as Interview, answers, picks };
+  return { interview: normalizeInterview(iv.data), answers, picks };
 }
 
 export async function patchInterview(id: string, patch: InterviewPatch): Promise<void> {
@@ -173,6 +196,7 @@ export async function listInterviewAudio(interviewId: string): Promise<AudioFile
 // ---------------------------------------------------------------- Análise
 
 export interface AnalysisData {
+  schemaOutdated: boolean;
   interviews: Interview[];
   answers: AnswerRow[];
   picks: PickRow[];
@@ -188,7 +212,8 @@ export async function loadAnalysisData(): Promise<AnalysisData> {
   if (ans.error) throw ans.error;
   if (pk.error) throw pk.error;
   return {
-    interviews: (iv.data ?? []) as Interview[],
+    schemaOutdated: isSchemaOutdated(iv.data ?? []),
+    interviews: (iv.data ?? []).map(normalizeInterview),
     answers: (ans.data ?? []) as AnswerRow[],
     picks: (pk.data ?? []) as PickRow[],
   };

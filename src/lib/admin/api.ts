@@ -40,8 +40,20 @@ export async function listInterviews(): Promise<Interview[]> {
   return (data ?? []) as Interview[];
 }
 
-export async function createInterview(): Promise<Interview> {
-  const { data, error } = await sb().from("interviews").insert({}).select("*").single();
+export async function createInterview(input: {
+  sectorKey: string;
+  companyName: string;
+  sectorCustomName?: string;
+}): Promise<Interview> {
+  const { data, error } = await sb()
+    .from("interviews")
+    .insert({
+      sector_key: input.sectorKey,
+      company_name: input.companyName.trim(),
+      sector_custom_name: (input.sectorCustomName ?? "").trim(),
+    })
+    .select("*")
+    .single();
   if (error) throw error;
   return data as Interview;
 }

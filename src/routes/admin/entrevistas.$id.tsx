@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AudioBar } from "@/components/admin/AudioBar";
@@ -7,19 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useDictation } from "@/hooks/useDictation";
 import { getInterviewBundle, patchInterview, savePicks, saveAnswers } from "@/lib/admin/api";
 import {
   COMMITMENT_OPTIONS,
-  OPENING_SCRIPT,
   OPENING_TIP,
   PAIN_OPTIONS,
-  SIZE_OPTIONS,
-  STEPS,
+  SEVERITY_OPTIONS,
+  buildSteps,
   type PriceField,
   type Question,
   type Step,
 } from "@/lib/admin/questions";
+import { getSector, sectorDisplayName } from "@/lib/admin/sectors";
 import type { Interview, InterviewPatch, PicksMap } from "@/lib/admin/types";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +29,7 @@ export const Route = createFileRoute("/admin/entrevistas/$id")({
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 const selectClass =
-  "h-10 w-full border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  "h-10 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: ReactNode }) {
   return (
@@ -162,38 +161,6 @@ function InterviewPage() {
     schedule();
   };
 
-  // ------------------------------------------------------------ ditado por voz
-  const answersRef = useRef(answers);
-  useEffect(() => {
-    answersRef.current = answers;
-  });
-
-  /** Acrescenta o texto ditado ao fim da resposta, sem apagar o que já foi escrito. */
-  const appendDictation = useCallback(
-    (key: string, text: string) => {
-      const current = answersRef.current[key] ?? "";
-      const separator = current === "" || /\s$/.test(current) ? "" : " ";
-      const next = `${current}${separator}${text}`;
-      answersRef.current = { ...answersRef.current, [key]: next };
-      setAnswers((prev) => ({ ...prev, [key]: next }));
-      pendingAnswers.current = { ...pendingAnswers.current, [key]: next };
-      schedule();
-    },
-    [schedule],
-  );
-
-  const dictation = useDictation(appendDictation);
-  const { stop: stopDictation, error: dictationError } = dictation;
-
-  // Trocar de etapa encerra o ditado em andamento.
-  useEffect(() => {
-    stopDictation();
-  }, [stepIndex, stopDictation]);
-
-  useEffect(() => {
-    if (dictationError) toast.error(dictationError);
-  }, [dictationError]);
-
   const setPrice = (field: PriceField, raw: string) => {
     const patch: InterviewPatch = {};
     const parsed = raw === "" ? null : Number(raw);
@@ -219,8 +186,8 @@ function InterviewPage() {
   }, [id]);
 
   const finish = async () => {
-    if (!interview?.store_name.trim()) {
-      toast.error("Informe o nome da loja na etapa Cadastro.");
+    if (!interview?.company_name.trim()) {
+      toast.error("Informe o nome da empresa na etapa Cadastro.");
       setStepIndex(0);
       return;
     }
@@ -234,7 +201,7 @@ function InterviewPage() {
     try {
       await patchInterview(id, { status: "concluida" });
       toast.success("Entrevista concluída.");
-      await navigate({ to: "/admin" });
+      await navigate({ to: "/admin/entrevistas" });
     } catch {
       toast.error("Não foi possível concluir a entrevista.");
       setFinishing(false);
@@ -242,6 +209,8 @@ function InterviewPage() {
   };
 
   // ------------------------------------------------------------ renderização
+  const steps = useMemo(() => buildSteps(getSector(interview?.sector_key)), [interview?.sector_key]);
+
   if (loadError === "notfound") {
     return <p className="text-sm text-muted-foreground">Entrevista não encontrada.</p>;
   }
@@ -256,15 +225,13 @@ function InterviewPage() {
     return <p className="text-sm text-muted-foreground">Carregando…</p>;
   }
 
-  const step: Step = STEPS[stepIndex] ?? STEPS[0]!;
-  const blocksFilled = STEPS.filter((s) => s.kind === "bloco").some((s) =>
+  const sector = getSector(interview.sector_key);
+  const step: Step = steps[stepIndex] ?? steps[0]!;
+  const blocksFilled = steps.filter((s) => s.kind === "bloco").some((s) =>
     s.questions.some((q) => (answers[q.key] ?? "").trim() !== ""),
   );
 
-  const questionField = (q: Question) => {
-    const dictating = dictation.activeKey === q.key;
-    const otherDictating = dictation.activeKey !== null && !dictating;
-    return (
+  const questionField = (q: Question) => (
     <div key={q.key} className="space-y-2">
       <Label htmlFor={q.key} className="text-base leading-snug">
         {q.label}
@@ -275,36 +242,7 @@ function InterviewPage() {
         value={answers[q.key] ?? ""}
         onChange={(e) => setAnswer(q.key, e.target.value)}
         placeholder="Anote com as palavras do entrevistado"
-        className={dictating ? "border-destructive" : undefined}
       />
-      {dictation.supported ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            size="sm"
-            variant={dictating ? "destructive" : "outline"}
-            disabled={!dictating && (!interview.consent_recording || otherDictating)}
-            title={
-              interview.consent_recording || dictating
-                ? undefined
-                : "Marque a autorização do entrevistado na etapa Abertura"
-            }
-            onClick={() => (dictating ? dictation.stop() : dictation.start(q.key))}
-          >
-            {dictating ? "Parar ditado" : "Ditar resposta"}
-          </Button>
-          {dictating ? (
-            <span aria-live="polite" className="text-xs text-destructive">
-              {dictation.listening
-                ? "● Ouvindo… fale agora"
-                : "Iniciando o microfone… permita o acesso se o navegador pedir"}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-      {dictating && dictation.interim ? (
-        <p className="text-sm italic text-muted-foreground">{dictation.interim}</p>
-      ) : null}
       {q.price ? (
         <div className="max-w-xs space-y-1">
           <Label htmlFor={`${q.key}_price`} className="text-xs text-muted-foreground">
@@ -322,8 +260,7 @@ function InterviewPage() {
         </div>
       ) : null}
     </div>
-    );
-  };
+  );
 
   const appendFollowUp = (text: string) => {
     const notesKey = step.questions.find((q) => q.key.endsWith("_notes"))?.key;
@@ -345,12 +282,15 @@ function InterviewPage() {
     <div className="pb-36">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Link to="/admin" className="text-sm text-muted-foreground underline underline-offset-4">
+          <Link to="/admin/entrevistas" className="text-sm text-muted-foreground underline underline-offset-4">
             ← Entrevistas
           </Link>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            {interview.store_name.trim() || "Nova entrevista"}
+            {interview.company_name.trim() || "Nova entrevista"}
           </h1>
+          <p className="text-sm text-muted-foreground">
+            {sectorDisplayName(interview.sector_key, interview.sector_custom_name)}
+          </p>
         </div>
         <span
           aria-live="polite"
@@ -362,17 +302,17 @@ function InterviewPage() {
 
       <div className="grid gap-8 md:grid-cols-[240px_1fr]">
         <nav aria-label="Etapas" className="flex gap-2 overflow-x-auto md:flex-col md:overflow-visible">
-          {STEPS.map((s, idx) => (
+          {steps.map((s, idx) => (
             <button
               key={s.id}
               type="button"
               onClick={() => setStepIndex(idx)}
               aria-current={idx === stepIndex ? "step" : undefined}
               className={cn(
-                "shrink-0 border px-3 py-2 text-left text-sm transition-colors",
+                "shrink-0 rounded-md border px-3 py-2 text-left text-sm transition-colors",
                 idx === stepIndex
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border text-muted-foreground hover:text-foreground",
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground",
               )}
             >
               {s.title}
@@ -388,27 +328,16 @@ function InterviewPage() {
           </div>
 
           {step.notice ? (
-            <p className="border border-border bg-card px-4 py-3 text-sm">⚠ {step.notice}</p>
-          ) : null}
-
-          {step.questions.length > 0 && dictation.supported && !interview.consent_recording ? (
-            <p className="text-xs text-muted-foreground">
-              Para ditar as respostas, marque a autorização do entrevistado na etapa Abertura.
-            </p>
-          ) : null}
-          {step.questions.length > 0 && !dictation.supported ? (
-            <p className="text-xs text-muted-foreground">
-              O ditado por voz não funciona neste navegador. Use o Chrome ou o Edge no notebook.
-            </p>
+            <p className="rounded-md border border-border bg-card px-4 py-3 text-sm">⚠ {step.notice}</p>
           ) : null}
 
           {step.kind === "cadastro" ? (
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Nome da loja" htmlFor="store_name">
+              <Field label={sector.companyLabel} htmlFor="company_name">
                 <Input
-                  id="store_name"
-                  value={interview.store_name}
-                  onChange={(e) => updateField({ store_name: e.target.value })}
+                  id="company_name"
+                  value={interview.company_name}
+                  onChange={(e) => updateField({ company_name: e.target.value })}
                 />
               </Field>
               <Field label="Entrevistado" htmlFor="interviewee_name">
@@ -429,15 +358,23 @@ function InterviewPage() {
               <Field label="Cidade" htmlFor="city">
                 <Input id="city" value={interview.city} onChange={(e) => updateField({ city: e.target.value })} />
               </Field>
-              <Field label="Porte da loja" htmlFor="store_size">
+              <Field label="Contato (telefone ou WhatsApp)" htmlFor="contact">
+                <Input
+                  id="contact"
+                  inputMode="tel"
+                  value={interview.contact}
+                  onChange={(e) => updateField({ contact: e.target.value })}
+                />
+              </Field>
+              <Field label="Porte" htmlFor="company_size">
                 <select
-                  id="store_size"
+                  id="company_size"
                   className={selectClass}
-                  value={interview.store_size ?? ""}
-                  onChange={(e) => updateField({ store_size: e.target.value === "" ? null : e.target.value })}
+                  value={interview.company_size ?? ""}
+                  onChange={(e) => updateField({ company_size: e.target.value === "" ? null : e.target.value })}
                 >
                   <option value="">Selecione…</option>
-                  {SIZE_OPTIONS.map((o) => (
+                  {sector.sizeOptions.map((o) => (
                     <option key={o.key} value={o.key}>
                       {o.label}
                     </option>
@@ -455,11 +392,11 @@ function InterviewPage() {
 
           {step.kind === "abertura" ? (
             <div className="space-y-5">
-              <blockquote className="border-l-2 border-foreground pl-4 text-base leading-relaxed">
-                {OPENING_SCRIPT}
+              <blockquote className="border-l-2 border-primary pl-4 text-base leading-relaxed">
+                {sector.opening}
               </blockquote>
               <p className="text-sm text-muted-foreground">{OPENING_TIP}</p>
-              <label className="flex cursor-pointer items-start gap-3 border border-border bg-card p-4">
+              <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-card p-4">
                 <input
                   type="checkbox"
                   className="mt-1 h-4 w-4"
@@ -472,7 +409,7 @@ function InterviewPage() {
                   }
                 />
                 <span className="text-sm">
-                  O entrevistado autorizou a gravação de áudio e a transcrição da fala.
+                  O entrevistado autorizou a gravação de áudio.
                   <span className="block text-xs text-muted-foreground">
                     {interview.consent_at
                       ? `Autorizado em ${new Date(interview.consent_at).toLocaleString("pt-BR")}`
@@ -496,7 +433,7 @@ function InterviewPage() {
                         key={f}
                         type="button"
                         onClick={() => appendFollowUp(f)}
-                        className="border border-input px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                        className="rounded-md border border-input bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {f}
                       </button>
@@ -522,18 +459,43 @@ function InterviewPage() {
                   </select>
                 </Field>
               ) : null}
+
+              {step.id === "bloco2" ? (
+                <div className="space-y-2">
+                  <Label>Gravidade da dor principal</Label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {SEVERITY_OPTIONS.map((o) => (
+                      <button
+                        key={o.key}
+                        type="button"
+                        aria-pressed={interview.pain_severity === o.key}
+                        onClick={() => updateField({ pain_severity: interview.pain_severity === o.key ? null : o.key })}
+                        className={cn(
+                          "rounded-md border p-2 text-center text-sm transition-colors",
+                          interview.pain_severity === o.key
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        <span className="block font-medium">{o.label}</span>
+                        <span className="hidden text-[11px] leading-tight opacity-80 sm:block">{o.help}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
           {step.kind === "priorizacao" ? (
             <div className="space-y-6">
               {!blocksFilled ? (
-                <p className="border border-border bg-card px-4 py-3 text-sm">
+                <p className="rounded-md border border-border bg-card px-4 py-3 text-sm">
                   Os blocos 1 a 4 ainda estão vazios. Faça esses blocos antes da priorização para não influenciar as
                   respostas.
                 </p>
               ) : null}
-              <FeaturePicker picks={picks} onChange={changePicks} />
+              <FeaturePicker features={sector.features} picks={picks} onChange={changePicks} />
               {step.questions.map((q) => questionField(q))}
             </div>
           ) : null}
@@ -550,10 +512,10 @@ function InterviewPage() {
                       aria-pressed={interview.commitment_level === o.key}
                       onClick={() => updateField({ commitment_level: o.key })}
                       className={cn(
-                        "border p-3 text-left text-sm transition-colors",
+                        "rounded-md border p-3 text-left text-sm transition-colors",
                         interview.commitment_level === o.key
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border text-muted-foreground hover:text-foreground",
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card text-muted-foreground hover:text-foreground",
                       )}
                     >
                       <span className="block font-medium">{o.label}</span>
@@ -598,8 +560,8 @@ function InterviewPage() {
             </Button>
             <Button
               variant="outline"
-              disabled={stepIndex === STEPS.length - 1}
-              onClick={() => setStepIndex((i) => Math.min(STEPS.length - 1, i + 1))}
+              disabled={stepIndex === steps.length - 1}
+              onClick={() => setStepIndex((i) => Math.min(steps.length - 1, i + 1))}
             >
               Próxima etapa
             </Button>

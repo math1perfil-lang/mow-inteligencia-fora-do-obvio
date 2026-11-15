@@ -90,9 +90,9 @@ export function AudioBar({ interviewId, consent, onUploaded, onRecordingChange }
   }, [recording, onRecordingChange]);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-40 lg:left-60 border-t border-border bg-background/95 backdrop-blur">
       {open ? (
-        <div className="mx-auto max-h-56 max-w-[1280px] space-y-3 overflow-y-auto px-5 py-3">
+        <div className="mx-auto max-h-56 max-w-[1100px] space-y-3 overflow-y-auto px-5 py-3">
           {files.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma gravação enviada ainda.</p>
           ) : (
@@ -109,10 +109,10 @@ export function AudioBar({ interviewId, consent, onUploaded, onRecordingChange }
         </div>
       ) : null}
 
-      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-3 px-5 py-3">
+      <div className="mx-auto flex max-w-[1100px] flex-wrap items-center gap-3 px-5 py-3">
         <span
           aria-live="polite"
-          className={`eyebrow ${recorder.state === "recording" ? "text-destructive" : "text-muted-foreground"}`}
+          className={`text-xs font-medium uppercase tracking-wide ${recorder.state === "recording" ? "text-destructive" : "text-muted-foreground"}`}
         >
           {recorder.state === "recording" ? "● Gravando" : recorder.state === "paused" ? "Pausado" : "Áudio"}
         </span>

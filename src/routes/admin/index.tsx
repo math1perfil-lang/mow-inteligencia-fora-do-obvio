@@ -1,151 +1,132 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { NewInterviewDialog } from "@/components/admin/NewInterviewDialog";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { createInterview, listInterviews } from "@/lib/admin/api";
-import { COMMITMENT_OPTIONS, SIZE_OPTIONS, labelFrom } from "@/lib/admin/questions";
-import type { Interview } from "@/lib/admin/types";
+import { loadAnalysisData, type AnalysisData } from "@/lib/admin/api";
+import { computeAnalysis } from "@/lib/admin/analysis";
+import { SECTORS, sectorDisplayName } from "@/lib/admin/sectors";
 
 export const Route = createFileRoute("/admin/")({
-  component: InterviewList,
+  component: Dashboard,
 });
 
-const selectClass =
-  "h-9 border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-5">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tabular-nums">{value}</p>
+      {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
+  );
 }
 
-function InterviewList() {
+function Dashboard() {
   const navigate = useNavigate();
-  const [items, setItems] = useState<Interview[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState("todas");
-  const [sizeFilter, setSizeFilter] = useState("todos");
-  const [creating, setCreating] = useState(false);
+  const [data, setData] = useState<AnalysisData | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let active = true;
-    listInterviews()
-      .then((rows) => active && setItems(rows))
-      .catch(() => active && setError("Não foi possível carregar as entrevistas."));
+    loadAnalysisData()
+      .then((d) => active && setData(d))
+      .catch(() => active && setError(true));
     return () => {
       active = false;
     };
   }, []);
 
-  const filtered = useMemo(
-    () =>
-      (items ?? []).filter(
-        (i) =>
-          (statusFilter === "todas" || i.status === statusFilter) &&
-          (sizeFilter === "todos" || i.store_size === sizeFilter),
-      ),
-    [items, statusFilter, sizeFilter],
-  );
-
-  const startNew = async () => {
-    setCreating(true);
-    try {
-      const created = await createInterview();
-      await navigate({ to: "/admin/entrevistas/$id", params: { id: created.id } });
-    } catch {
-      toast.error("Não foi possível criar a entrevista.");
-      setCreating(false);
-    }
-  };
+  const analysis = useMemo(() => (data ? computeAnalysis(data) : null), [data]);
+  const drafts = data ? data.interviews.filter((i) => i.status === "rascunho") : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Entrevistas</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Painel</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {items ? `${items.length} registradas` : "Carregando…"}
+            Visão geral das entrevistas de validação em todos os setores.
           </p>
         </div>
-        <Button onClick={() => void startNew()} disabled={creating}>
-          {creating ? "Criando…" : "Nova entrevista"}
-        </Button>
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          Status
-          <select className={selectClass} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="todas">Todas</option>
-            <option value="rascunho">Rascunho</option>
-            <option value="concluida">Concluída</option>
-          </select>
-        </label>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          Porte
-          <select className={selectClass} value={sizeFilter} onChange={(e) => setSizeFilter(e.target.value)}>
-            <option value="todos">Todos</option>
-            {SIZE_OPTIONS.map((o) => (
-              <option key={o.key} value={o.key}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <NewInterviewDialog>
+          <Button>
+            <Plus /> Nova entrevista
+          </Button>
+        </NewInterviewDialog>
       </div>
 
       {error ? (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          Não foi possível carregar os dados. Confira se a migração do banco foi executada.
         </p>
       ) : null}
 
-      <div className="overflow-x-auto border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Loja</TableHead>
-              <TableHead>Entrevistado</TableHead>
-              <TableHead>Porte</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Compromisso</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((i) => (
-              <TableRow
-                key={i.id}
-                className="cursor-pointer"
-                tabIndex={0}
-                onClick={() => void navigate({ to: "/admin/entrevistas/$id", params: { id: i.id } })}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter")
-                    void navigate({ to: "/admin/entrevistas/$id", params: { id: i.id } });
-                }}
-              >
-                <TableCell className="font-medium">{i.store_name || "Sem nome"}</TableCell>
-                <TableCell>{i.interviewee_name || "—"}</TableCell>
-                <TableCell>{labelFrom(SIZE_OPTIONS, i.store_size)}</TableCell>
-                <TableCell>{formatDate(i.started_at)}</TableCell>
-                <TableCell>
-                  <Badge variant={i.status === "concluida" ? "default" : "outline"}>
-                    {i.status === "concluida" ? "Concluída" : "Rascunho"}
-                  </Badge>
-                </TableCell>
-                <TableCell>{labelFrom(COMMITMENT_OPTIONS, i.commitment_level)}</TableCell>
-              </TableRow>
-            ))}
-            {items && filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  Nenhuma entrevista encontrada.
-                </TableCell>
-              </TableRow>
-            ) : null}
-          </TableBody>
-        </Table>
-      </div>
+      {analysis ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Stat label="Entrevistas" value={analysis.total} />
+            <Stat label="Concluídas" value={analysis.completed.length} />
+            <Stat label="Em rascunho" value={drafts.length} />
+            <Stat label="Aceitam testar pagando" value={analysis.willingToPay} hint="Compromisso forte ou muito forte" />
+          </div>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">Setores</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {SECTORS.map((s) => {
+                const summary = analysis.sectors.find((x) => x.key === s.key);
+                return (
+                  <div key={s.key} className="flex flex-col justify-between gap-4 rounded-lg border border-border bg-card p-5">
+                    <div>
+                      <p className="font-medium">{s.label}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {summary
+                          ? `${summary.completed} concluídas de ${summary.total} · ${summary.willing} aceitam pagar`
+                          : "Nenhuma entrevista ainda"}
+                      </p>
+                      {summary?.topPain ? (
+                        <p className="mt-2 text-sm">
+                          Dor mais citada: <span className="font-medium">{summary.topPain}</span> ({summary.topPainCount})
+                        </p>
+                      ) : null}
+                    </div>
+                    <NewInterviewDialog defaultSector={s.key}>
+                      <Button variant="outline" size="sm" className="self-start">
+                        Entrevistar este setor
+                      </Button>
+                    </NewInterviewDialog>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {drafts.length > 0 ? (
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold">Continuar rascunhos</h2>
+              <ul className="divide-y divide-border rounded-lg border border-border bg-card">
+                {drafts.slice(0, 5).map((i) => (
+                  <li key={i.id}>
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-accent"
+                      onClick={() => void navigate({ to: "/admin/entrevistas/$id", params: { id: i.id } })}
+                    >
+                      <span className="font-medium">{i.company_name || "Sem nome"}</span>
+                      <span className="text-muted-foreground">{sectorDisplayName(i.sector_key, i.sector_custom_name)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/admin/entrevistas" className="text-sm text-muted-foreground underline underline-offset-4">
+                Ver todas as entrevistas
+              </Link>
+            </section>
+          ) : null}
+        </>
+      ) : !error ? (
+        <p className="text-sm text-muted-foreground">Carregando…</p>
+      ) : null}
     </div>
   );
 }

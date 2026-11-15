@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
+import { BarChart3, ClipboardList, LayoutDashboard, ListChecks, LogOut, Menu, X } from "lucide-react";
 import { toast } from "sonner";
 import { LoginForm } from "@/components/admin/LoginForm";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,22 @@ function Centered({ children }: { children: React.ReactNode }) {
   );
 }
 
+const NAV = [
+  { to: "/admin", label: "Painel", icon: LayoutDashboard, exact: true },
+  { to: "/admin/entrevistas", label: "Entrevistas", icon: ClipboardList, exact: false },
+  { to: "/admin/analise", label: "Análise", icon: BarChart3, exact: false },
+  { to: "/admin/roteiros", label: "Roteiros", icon: ListChecks, exact: false },
+] as const;
+
 function AdminLayout() {
   const session = useAdminSession();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Aplica o tema do painel ao <html>, para valer também em diálogos e avisos.
+  useEffect(() => {
+    document.documentElement.classList.add("admin-theme");
+    return () => document.documentElement.classList.remove("admin-theme");
+  }, []);
 
   // Reenvia gravações que ficaram guardadas neste notebook (loja sem internet).
   useEffect(() => {
@@ -84,38 +99,73 @@ function AdminLayout() {
     );
   }
 
+  const nav = (
+    <nav className="flex flex-col gap-1" aria-label="Principal">
+      {NAV.map((item) => (
+        <Link
+          key={item.to}
+          to={item.to}
+          activeOptions={{ exact: item.exact }}
+          onClick={() => setMenuOpen(false)}
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-white/65 transition-colors hover:bg-white/10 hover:text-white"
+          activeProps={{ className: "bg-white/10 text-white" }}
+        >
+          <item.icon className="size-4" />
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+
+  const account = (
+    <div className="space-y-2 border-t border-white/10 pt-4">
+      <p className="truncate px-3 text-xs text-white/50">{session.email}</p>
+      <button
+        type="button"
+        onClick={() => void session.signOut()}
+        className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-white/65 transition-colors hover:bg-white/10 hover:text-white"
+      >
+        <LogOut className="size-4" />
+        Sair
+      </button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-4 px-5">
-          <nav className="flex items-center gap-6 text-sm">
-            <span className="eyebrow text-muted-foreground">MOW · Admin</span>
-            <Link
-              to="/admin"
-              activeOptions={{ exact: true }}
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              activeProps={{ className: "text-foreground" }}
-            >
-              Entrevistas
-            </Link>
-            <Link
-              to="/admin/analise"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              activeProps={{ className: "text-foreground" }}
-            >
-              Análise
-            </Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-muted-foreground sm:inline">{session.email}</span>
-            <Button variant="ghost" size="sm" onClick={() => void session.signOut()}>
-              Sair
-            </Button>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col justify-between bg-ink p-4 text-paper lg:flex">
+        <div className="space-y-6">
+          <div className="px-3 pt-1">
+            <p className="text-base font-semibold tracking-tight">MOW</p>
+            <p className="text-xs text-white/50">Validação de mercado</p>
           </div>
+          {nav}
         </div>
+        {account}
+      </aside>
+
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-ink px-4 text-paper lg:hidden">
+        <p className="text-base font-semibold tracking-tight">MOW · Admin</p>
+        <button
+          type="button"
+          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          onClick={() => setMenuOpen((v) => !v)}
+          className="rounded-md p-2 hover:bg-white/10"
+        >
+          {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        </button>
       </header>
-      <main className="mx-auto max-w-[1280px] px-5 py-8">
-        <Outlet />
+      {menuOpen ? (
+        <div className="fixed inset-x-0 top-14 z-30 space-y-4 bg-ink p-4 text-paper shadow-lg lg:hidden">
+          {nav}
+          {account}
+        </div>
+      ) : null}
+
+      <main className="px-4 py-6 sm:px-8 sm:py-8 lg:ml-60">
+        <div className="mx-auto max-w-[1100px]">
+          <Outlet />
+        </div>
       </main>
       <Toaster />
     </div>

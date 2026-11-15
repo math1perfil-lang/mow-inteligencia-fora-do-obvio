@@ -295,7 +295,9 @@ function InterviewPage() {
           </Button>
           {dictating ? (
             <span aria-live="polite" className="text-xs text-destructive">
-              ● Ouvindo… fale agora
+              {dictation.listening
+                ? "● Ouvindo… fale agora"
+                : "Iniciando o microfone… permita o acesso se o navegador pedir"}
             </span>
           ) : null}
         </div>

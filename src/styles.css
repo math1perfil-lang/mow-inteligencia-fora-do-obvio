@@ -194,3 +194,46 @@
   transition: color 0.5s ease;
 }
 .hero-outline:hover { color: var(--foreground); }
+
+/* ------------------------------------------------------------------ */
+/* Painel administrativo: tema claro próprio, separado do site público. */
+/* A classe é aplicada ao <html> pela rota /admin (também vale para    */
+/* diálogos e avisos, que são renderizados fora da página).            */
+/* ------------------------------------------------------------------ */
+:root.admin-theme {
+  --radius: 0.5rem;
+  --background: #f4f5f7;
+  --foreground: #14171f;
+  --card: #ffffff;
+  --card-foreground: #14171f;
+  --popover: #ffffff;
+  --popover-foreground: #14171f;
+  --primary: #14171f;
+  --primary-foreground: #ffffff;
+  --secondary: #eceef2;
+  --secondary-foreground: #14171f;
+  --muted: #eceef2;
+  --muted-foreground: #5d6472;
+  --accent: #eceef2;
+  --accent-foreground: #14171f;
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: #ffffff;
+  --border: #dfe2e8;
+  --input: #cdd1d9;
+  --ring: #2563eb;
+  --admin-accent: #2563eb;
+}
+:root.admin-theme body {
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0;
+  overflow-x: hidden;
+}
+:root.admin-theme ::selection {
+  background: #bfdbfe;
+  color: #14171f;
+}
+:root.admin-theme :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

@@ -1,13 +1,14 @@
 import type { AnalysisData } from "./api";
 import {
-  ALL_QUESTIONS,
   COMMITMENT_OPTIONS,
   DECISION_RULE,
-  FEATURES,
   PAIN_OPTIONS,
-  SIZE_OPTIONS,
+  SECTOR_QUESTION_COLUMNS,
+  SIZE_LABELS,
+  UNIVERSAL_QUESTIONS,
   labelFrom,
 } from "./questions";
+import { ALL_FEATURES, SECTORS, getSector, sectorDisplayName } from "./sectors";
 import type { Interview } from "./types";
 
 export interface PriceStat {
@@ -34,17 +35,40 @@ export interface Decision {
   reason: string;
 }
 
+export interface PainStat {
+  key: string;
+  label: string;
+  count: number;
+  avgSeverity: number | null;
+  willing: number;
+  /** Número de entrevistas × gravidade média: ordena as oportunidades. */
+  score: number;
+}
+
+export interface SectorSummary {
+  key: string;
+  label: string;
+  total: number;
+  completed: number;
+  willing: number;
+  topPain: string | null;
+  topPainCount: number;
+  decision: Decision;
+}
+
 export interface Analysis {
   total: number;
   completed: Interview[];
+  bySector: { label: string; count: number }[];
+  sectors: SectorSummary[];
   bySize: { label: string; count: number }[];
   byCommitment: { label: string; count: number }[];
-  byPain: { key: string; label: string; count: number }[];
+  byPain: PainStat[];
   features: FeatureStat[];
   prices: PriceStat[];
   willingToPay: number;
   painAnswers: { interview: Interview; b2_q2: string; b2_q3: string }[];
-  decision: Decision;
+  decision: Decision | null;
 }
 
 function median(values: number[]): number | null {
@@ -68,13 +92,86 @@ function priceStat(label: string, values: (number | null)[]): PriceStat {
   };
 }
 
-export function computeAnalysis(data: AnalysisData): Analysis {
-  const completed = data.interviews.filter((i) => i.status === "concluida");
+function isWilling(i: Interview): boolean {
+  return i.commitment_level === "forte" || i.commitment_level === "muito_forte";
+}
+
+function decide(rows: Interview[], topCount: number): Decision {
+  const willing = rows.filter(isWilling).length;
+  if (rows.length < DECISION_RULE.minInterviews) {
+    return {
+      kind: "insuficiente",
+      title: "Dados insuficientes",
+      reason: `Há ${rows.length} entrevistas concluídas. A regra sugere pelo menos ${DECISION_RULE.minInterviews} antes de decidir.`,
+    };
+  }
+  if (topCount >= DECISION_RULE.minSamePain && willing >= DECISION_RULE.minWillingToPay) {
+    return {
+      kind: "seguir",
+      title: "Sugestão: seguir",
+      reason: `${topCount} entrevistados citaram a mesma dor e ${willing} aceitam testar pagando. Construa o MVP dessa função.`,
+    };
+  }
+  if (willing === 0) {
+    return {
+      kind: "parar",
+      title: "Sugestão: parar ou repensar o setor",
+      reason: "Ninguém aceitou testar pagando. Revise o público e o problema antes de construir.",
+    };
+  }
+  return {
+    kind: "mudar",
+    title: "Sugestão: mudar",
+    reason: `A dor mais citada aparece em ${topCount} entrevistas e ${willing} aceitam pagar. Revise preço, função ou o porte e repita.`,
+  };
+}
+
+function painStats(rows: Interview[]): PainStat[] {
+  return PAIN_OPTIONS.map((o) => {
+    const group = rows.filter((i) => i.main_pain_key === o.key);
+    const sev = group.map((i) => i.pain_severity).filter((v): v is number => typeof v === "number");
+    const avg = sev.length ? sev.reduce((a, b) => a + b, 0) / sev.length : null;
+    return {
+      key: o.key,
+      label: o.label,
+      count: group.length,
+      avgSeverity: avg,
+      willing: group.filter(isWilling).length,
+      score: group.length * (avg ?? 3),
+    };
+  }).sort((a, b) => b.score - a.score || b.count - a.count);
+}
+
+/** sectorKey "todos" considera todos os setores juntos. */
+export function computeAnalysis(data: AnalysisData, sectorKey: string = "todos"): Analysis {
+  const inScope = data.interviews.filter((i) => sectorKey === "todos" || i.sector_key === sectorKey);
+  const completed = inScope.filter((i) => i.status === "concluida");
   const ids = new Set(completed.map((i) => i.id));
 
-  const bySize = SIZE_OPTIONS.map((o) => ({
+  const bySector = SECTORS.map((s) => ({
+    label: s.label,
+    count: completed.filter((i) => i.sector_key === s.key).length,
+  }));
+
+  const sectors: SectorSummary[] = SECTORS.map((s) => {
+    const all = data.interviews.filter((i) => i.sector_key === s.key);
+    const done = all.filter((i) => i.status === "concluida");
+    const top = painStats(done).find((p) => p.key !== "outra" && p.count > 0);
+    return {
+      key: s.key,
+      label: s.label,
+      total: all.length,
+      completed: done.length,
+      willing: done.filter(isWilling).length,
+      topPain: top?.label ?? null,
+      topPainCount: top?.count ?? 0,
+      decision: decide(done, top?.count ?? 0),
+    };
+  }).filter((s) => s.total > 0);
+
+  const bySize = SIZE_LABELS.map((o) => ({
     label: o.label,
-    count: completed.filter((i) => i.store_size === o.key).length,
+    count: completed.filter((i) => i.company_size === o.key).length,
   }));
 
   const byCommitment = COMMITMENT_OPTIONS.map((o) => ({
@@ -82,32 +179,27 @@ export function computeAnalysis(data: AnalysisData): Analysis {
     count: completed.filter((i) => i.commitment_level === o.key).length,
   }));
 
-  const byPain = PAIN_OPTIONS.map((o) => ({
-    key: o.key,
-    label: o.label,
-    count: completed.filter((i) => i.main_pain_key === o.key).length,
-  })).sort((a, b) => b.count - a.count);
+  const byPain = painStats(completed);
 
-  const features: FeatureStat[] = FEATURES.map((f) => {
-    const rows = data.picks.filter((p) => p.feature_key === f.key && ids.has(p.interview_id));
-    return {
-      key: f.key,
-      title: f.title,
-      first: rows.filter((r) => r.rank === 1).length,
-      second: rows.filter((r) => r.rank === 2).length,
-      noDifference: rows.filter((r) => r.no_difference).length,
-    };
-  }).sort((a, b) => b.first * 2 + b.second - (a.first * 2 + a.second));
+  const features: FeatureStat[] = ALL_FEATURES.filter((f) => sectorKey === "todos" || f.sectorKey === sectorKey)
+    .map((f) => {
+      const rows = data.picks.filter((p) => p.feature_key === f.key && ids.has(p.interview_id));
+      return {
+        key: f.key,
+        title: sectorKey === "todos" ? `${f.title} (${getSector(f.sectorKey).label})` : f.title,
+        first: rows.filter((r) => r.rank === 1).length,
+        second: rows.filter((r) => r.rank === 2).length,
+        noDifference: rows.filter((r) => r.no_difference).length,
+      };
+    })
+    .filter((f) => sectorKey !== "todos" || f.first + f.second + f.noDifference > 0)
+    .sort((a, b) => b.first * 2 + b.second - (a.first * 2 + a.second));
 
   const prices = [
     priceStat("Faria sentido pagar", completed.map((i) => i.price_accept_brl)),
     priceStat("Caro demais", completed.map((i) => i.price_too_expensive_brl)),
     priceStat("Barato demais (suspeito)", completed.map((i) => i.price_too_cheap_brl)),
   ];
-
-  const willingToPay = completed.filter(
-    (i) => i.commitment_level === "forte" || i.commitment_level === "muito_forte",
-  ).length;
 
   const answerOf = (interviewId: string, key: string): string =>
     data.answers.find((a) => a.interview_id === interviewId && a.question_key === key)?.answer_text ?? "";
@@ -118,45 +210,23 @@ export function computeAnalysis(data: AnalysisData): Analysis {
     b2_q3: answerOf(interview.id, "b2_q3"),
   }));
 
-  // "Outra dor" não conta como uma dor em comum; só as dores mapeadas às funções.
-  const topCount = byPain.find((p) => p.key !== "outra")?.count ?? 0;
-
-  let decision: Decision;
-  if (completed.length < DECISION_RULE.minInterviews) {
-    decision = {
-      kind: "insuficiente",
-      title: "Dados insuficientes",
-      reason: `Há ${completed.length} entrevistas concluídas. A regra sugere pelo menos ${DECISION_RULE.minInterviews} antes de decidir.`,
-    };
-  } else if (topCount >= DECISION_RULE.minSamePain && willingToPay >= DECISION_RULE.minWillingToPay) {
-    decision = {
-      kind: "seguir",
-      title: "Sugestão: seguir",
-      reason: `${topCount} lojistas citaram a mesma dor e ${willingToPay} aceitam testar pagando. Construa o MVP dessa função.`,
-    };
-  } else if (willingToPay === 0) {
-    decision = {
-      kind: "parar",
-      title: "Sugestão: parar ou repensar o mercado",
-      reason: "Ninguém aceitou testar pagando. Revise o público e o problema antes de construir.",
-    };
-  } else {
-    decision = {
-      kind: "mudar",
-      title: "Sugestão: mudar",
-      reason: `A dor mais citada aparece em ${topCount} lojas e ${willingToPay} aceitam pagar. Revise preço, função ou o porte da loja e repita.`,
-    };
-  }
+  // A decisão só faz sentido dentro de um setor: misturar setores esconde a dor comum.
+  const decision =
+    sectorKey === "todos"
+      ? null
+      : decide(completed, byPain.find((p) => p.key !== "outra")?.count ?? 0);
 
   return {
-    total: data.interviews.length,
+    total: inScope.length,
     completed,
+    bySector,
+    sectors,
     bySize,
     byCommitment,
     byPain,
     features,
     prices,
-    willingToPay,
+    willingToPay: completed.filter(isWilling).length,
     painAnswers,
     decision,
   };
@@ -170,25 +240,28 @@ function csvCell(value: unknown): string {
 }
 
 export function buildCsv(data: AnalysisData): string {
-  const questionKeys = ALL_QUESTIONS.map((q) => q.key);
   const header = [
     "id",
     "status",
     "data",
-    "loja",
+    "setor",
+    "empresa",
     "entrevistado",
     "cargo",
+    "contato",
     "porte",
     "cidade",
     "autorizou_gravacao",
     "dor_principal",
+    "gravidade_dor",
     "compromisso",
     "obs_compromisso",
     "preco_faz_sentido",
     "preco_caro_demais",
     "preco_barato_demais",
-    ...FEATURES.map((f) => `funcao_${f.key}`),
-    ...questionKeys,
+    ...ALL_FEATURES.map((f) => `funcao_${f.key}`),
+    ...UNIVERSAL_QUESTIONS.map((q) => q.key),
+    ...SECTOR_QUESTION_COLUMNS.map((c) => c.column),
     "notas_gerais",
   ];
 
@@ -207,20 +280,24 @@ export function buildCsv(data: AnalysisData): string {
       i.id,
       i.status,
       i.started_at,
-      i.store_name,
+      sectorDisplayName(i.sector_key, i.sector_custom_name),
+      i.company_name,
       i.interviewee_name,
       i.interviewee_role,
-      labelFrom(SIZE_OPTIONS, i.store_size),
+      i.contact,
+      labelFrom(getSector(i.sector_key).sizeOptions, i.company_size),
       i.city,
       i.consent_recording ? "sim" : "não",
       labelFrom(PAIN_OPTIONS, i.main_pain_key),
+      i.pain_severity,
       labelFrom(COMMITMENT_OPTIONS, i.commitment_level),
       i.commitment_notes,
       i.price_accept_brl,
       i.price_too_expensive_brl,
       i.price_too_cheap_brl,
-      ...FEATURES.map((f) => pickText(f.key)),
-      ...questionKeys.map((k) => answers.get(k) ?? ""),
+      ...ALL_FEATURES.map((f) => pickText(f.key)),
+      ...UNIVERSAL_QUESTIONS.map((q) => answers.get(q.key) ?? ""),
+      ...SECTOR_QUESTION_COLUMNS.map((c) => (c.sectorKey === i.sector_key ? (answers.get(c.key) ?? "") : "")),
       i.general_notes,
     ];
     lines.push(row.map(csvCell).join(","));

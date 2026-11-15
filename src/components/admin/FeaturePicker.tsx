@@ -1,8 +1,9 @@
-import { FEATURES } from "@/lib/admin/questions";
+import type { FeatureCandidate } from "@/lib/admin/sectors";
 import type { PicksMap } from "@/lib/admin/types";
 import { cn } from "@/lib/utils";
 
 interface FeaturePickerProps {
+  features: FeatureCandidate[];
   picks: PicksMap;
   onChange: (next: PicksMap) => void;
 }
@@ -13,7 +14,7 @@ function emptyPick() {
   return { rank: null, no_difference: false } as const;
 }
 
-export function FeaturePicker({ picks, onChange }: FeaturePickerProps) {
+export function FeaturePicker({ features: FEATURES, picks, onChange }: FeaturePickerProps) {
   const apply = (featureKey: string, choice: Choice) => {
     const next: PicksMap = {};
     for (const f of FEATURES) {
@@ -49,17 +50,17 @@ export function FeaturePicker({ picks, onChange }: FeaturePickerProps) {
             aria-pressed={choice === value}
             onClick={() => apply(f.key, choice === value ? "clear" : value)}
             className={cn(
-              "border px-3 py-1.5 text-xs transition-colors",
+              "rounded-md border px-3 py-1.5 text-xs transition-colors",
               choice === value
-                ? "border-foreground bg-foreground text-background"
-                : "border-input text-muted-foreground hover:text-foreground",
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-input bg-card text-muted-foreground hover:text-foreground",
             )}
           >
             {label}
           </button>
         );
         return (
-          <div key={f.key} className="space-y-3 border border-border bg-card p-4">
+          <div key={f.key} className="space-y-3 rounded-lg border border-border bg-card p-4">
             <div>
               <p className="font-medium">{f.title}</p>
               <p className="mt-1 text-sm text-muted-foreground">{f.description}</p>

@@ -39,7 +39,7 @@ export function LoginForm({ canSignUp }: { canSignUp: boolean }) {
     <div className="flex min-h-screen items-center justify-center bg-background px-5">
       <form onSubmit={submit} className="w-full max-w-sm space-y-6 border border-border bg-card p-8">
         <div>
-          <p className="eyebrow text-muted-foreground">Área restrita</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Área restrita</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">
             {mode === "entrar" ? "Entrar" : "Criar primeira conta"}
           </h1>

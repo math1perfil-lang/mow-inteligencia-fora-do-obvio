@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useDictation } from "@/hooks/useDictation";
 import { getInterviewBundle, patchInterview, savePicks, saveAnswers } from "@/lib/admin/api";
 import {
   COMMITMENT_OPTIONS,
@@ -161,6 +162,38 @@ function InterviewPage() {
     schedule();
   };
 
+  // ------------------------------------------------------------ ditado por voz
+  const answersRef = useRef(answers);
+  useEffect(() => {
+    answersRef.current = answers;
+  });
+
+  /** Acrescenta o texto ditado ao fim da resposta, sem apagar o que já foi escrito. */
+  const appendDictation = useCallback(
+    (key: string, text: string) => {
+      const current = answersRef.current[key] ?? "";
+      const separator = current === "" || /\s$/.test(current) ? "" : " ";
+      const next = `${current}${separator}${text}`;
+      answersRef.current = { ...answersRef.current, [key]: next };
+      setAnswers((prev) => ({ ...prev, [key]: next }));
+      pendingAnswers.current = { ...pendingAnswers.current, [key]: next };
+      schedule();
+    },
+    [schedule],
+  );
+
+  const dictation = useDictation(appendDictation);
+  const { stop: stopDictation, error: dictationError } = dictation;
+
+  // Trocar de etapa encerra o ditado em andamento.
+  useEffect(() => {
+    stopDictation();
+  }, [stepIndex, stopDictation]);
+
+  useEffect(() => {
+    if (dictationError) toast.error(dictationError);
+  }, [dictationError]);
+
   const setPrice = (field: PriceField, raw: string) => {
     const patch: InterviewPatch = {};
     const parsed = raw === "" ? null : Number(raw);
@@ -228,7 +261,10 @@ function InterviewPage() {
     s.questions.some((q) => (answers[q.key] ?? "").trim() !== ""),
   );
 
-  const questionField = (q: Question) => (
+  const questionField = (q: Question) => {
+    const dictating = dictation.activeKey === q.key;
+    const otherDictating = dictation.activeKey !== null && !dictating;
+    return (
     <div key={q.key} className="space-y-2">
       <Label htmlFor={q.key} className="text-base leading-snug">
         {q.label}
@@ -239,7 +275,34 @@ function InterviewPage() {
         value={answers[q.key] ?? ""}
         onChange={(e) => setAnswer(q.key, e.target.value)}
         placeholder="Anote com as palavras do entrevistado"
+        className={dictating ? "border-destructive" : undefined}
       />
+      {dictation.supported ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            size="sm"
+            variant={dictating ? "destructive" : "outline"}
+            disabled={!dictating && (!interview.consent_recording || otherDictating)}
+            title={
+              interview.consent_recording || dictating
+                ? undefined
+                : "Marque a autorização do entrevistado na etapa Abertura"
+            }
+            onClick={() => (dictating ? dictation.stop() : dictation.start(q.key))}
+          >
+            {dictating ? "Parar ditado" : "Ditar resposta"}
+          </Button>
+          {dictating ? (
+            <span aria-live="polite" className="text-xs text-destructive">
+              ● Ouvindo… fale agora
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {dictating && dictation.interim ? (
+        <p className="text-sm italic text-muted-foreground">{dictation.interim}</p>
+      ) : null}
       {q.price ? (
         <div className="max-w-xs space-y-1">
           <Label htmlFor={`${q.key}_price`} className="text-xs text-muted-foreground">
@@ -257,7 +320,8 @@ function InterviewPage() {
         </div>
       ) : null}
     </div>
-  );
+    );
+  };
 
   const appendFollowUp = (text: string) => {
     const notesKey = step.questions.find((q) => q.key.endsWith("_notes"))?.key;
@@ -323,6 +387,17 @@ function InterviewPage() {
 
           {step.notice ? (
             <p className="border border-border bg-card px-4 py-3 text-sm">⚠ {step.notice}</p>
+          ) : null}
+
+          {step.questions.length > 0 && dictation.supported && !interview.consent_recording ? (
+            <p className="text-xs text-muted-foreground">
+              Para ditar as respostas, marque a autorização do entrevistado na etapa Abertura.
+            </p>
+          ) : null}
+          {step.questions.length > 0 && !dictation.supported ? (
+            <p className="text-xs text-muted-foreground">
+              O ditado por voz não funciona neste navegador. Use o Chrome ou o Edge no notebook.
+            </p>
           ) : null}
 
           {step.kind === "cadastro" ? (
@@ -395,7 +470,7 @@ function InterviewPage() {
                   }
                 />
                 <span className="text-sm">
-                  O entrevistado autorizou a gravação de áudio.
+                  O entrevistado autorizou a gravação de áudio e a transcrição da fala.
                   <span className="block text-xs text-muted-foreground">
                     {interview.consent_at
                       ? `Autorizado em ${new Date(interview.consent_at).toLocaleString("pt-BR")}`

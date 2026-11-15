@@ -275,7 +275,7 @@ function AnalysisPage() {
           <p className="text-sm text-muted-foreground">Ainda não há entrevistas concluídas.</p>
         ) : (
           <div className="space-y-5">
-            {analysis.painAnswers.map(({ interview, b2_q2, b2_q3 }) => (
+            {analysis.painAnswers.map(({ interview, items }) => (
               <div key={interview.id} className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
                 <p className="text-sm font-medium">
                   {interview.company_name || "Sem nome"}{" "}
@@ -284,14 +284,12 @@ function AnalysisPage() {
                     {labelFrom(SIZE_LABELS, interview.company_size)}
                   </span>
                 </p>
-                <p className="text-sm">
-                  <span className="text-muted-foreground">Tarefa que mais consome tempo: </span>
-                  {b2_q2.trim() || "—"}
-                </p>
-                <p className="text-sm">
-                  <span className="text-muted-foreground">Última venda perdida: </span>
-                  {b2_q3.trim() || "—"}
-                </p>
+                {items.map((it) => (
+                  <p key={it.label} className="text-sm">
+                    <span className="text-muted-foreground">{it.label}: </span>
+                    {it.text.trim() || "—"}
+                  </p>
+                ))}
               </div>
             ))}
           </div>

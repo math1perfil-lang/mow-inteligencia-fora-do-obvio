@@ -563,9 +563,10 @@ export function getSector(key: string | null | undefined): Sector {
 }
 
 /** Nome para exibir: no setor "Outro", o tipo de negócio digitado. */
-export function sectorDisplayName(key: string, custom: string): string {
+export function sectorDisplayName(key: string | null | undefined, custom: string | null | undefined): string {
   const sector = getSector(key);
-  return sector.key === "geral" && custom.trim() ? custom.trim() : sector.label;
+  const name = (custom ?? "").trim();
+  return sector.key === "geral" && name ? name : sector.label;
 }
 
 export const ALL_FEATURES: (FeatureCandidate & { sectorKey: string })[] = SECTORS.flatMap((s) =>

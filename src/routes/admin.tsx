@@ -13,6 +13,17 @@ export const Route = createFileRoute("/admin")({
     meta: [{ title: "Admin — MOW" }, { name: "robots", content: "noindex, nofollow" }],
   }),
   component: AdminLayout,
+  errorComponent: ({ error }) => (
+    <div className="flex min-h-screen items-center justify-center px-5 text-center">
+      <div className="max-w-md space-y-3">
+        <h1 className="text-xl font-semibold">Erro no painel</h1>
+        <p className="break-words text-sm text-muted-foreground">{error instanceof Error ? error.message : String(error)}</p>
+        <a href="/admin" className="text-sm underline underline-offset-4">
+          Recarregar
+        </a>
+      </div>
+    </div>
+  ),
 });
 
 function Centered({ children }: { children: React.ReactNode }) {

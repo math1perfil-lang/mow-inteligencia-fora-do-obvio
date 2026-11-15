@@ -61,6 +61,13 @@ function Dashboard() {
         </p>
       ) : null}
 
+      {data?.schemaOutdated ? (
+        <p role="alert" className="rounded-md border border-destructive p-4 text-sm text-destructive">
+          O banco ainda não recebeu a migração multi-setor. Rode as 3 partes do SQL no Supabase para criar e editar
+          entrevistas.
+        </p>
+      ) : null}
+
       {analysis ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

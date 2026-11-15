@@ -56,15 +56,11 @@ export function buildSteps(sector: Sector): Step[] {
     {
       id: "bloco1",
       kind: "bloco",
-      title: "Bloco 1: Contexto do negócio",
+      title: "Bloco 1: Contexto",
       minutes: 5,
       intro: "Classifique o negócio e entenda o tamanho da operação. Anote números.",
       notice: null,
-      questions: [
-        { key: "b1_q1", label: "Há quanto tempo o negócio existe e quantas pessoas trabalham nele?" },
-        { key: "b1_q2", label: `De onde vêm os ${clientNoun}s? (indicação, redes sociais, anúncios, passagem na porta)` },
-        ...sector.context,
-      ],
+      questions: sector.context,
       followUps: [],
     },
     {
@@ -74,19 +70,7 @@ export function buildSteps(sector: Sector): Step[] {
       minutes: 10,
       intro: "O coração da entrevista. Peça sempre uma história real e recente, não uma opinião geral.",
       notice: null,
-      questions: [
-        { key: "b2_q1", label: sector.coreFlow },
-        { key: "b2_q2", label: "Qual é a tarefa que mais consome o tempo da equipe na semana?" },
-        { key: "b2_q3", label: `Qual foi a última vez que você perdeu um ${clientNoun} ou uma venda? O que aconteceu?` },
-        {
-          key: "b2_q4",
-          label:
-            "Já perdeu dinheiro por erro de controle (esquecimento, cobrança não feita, informação errada)? Me conta o último caso.",
-        },
-        { key: "b2_q5", label: "Dessa tarefa que mais incomoda, o que você já tentou fazer para resolver?" },
-        ...sector.pain,
-        { key: "b2_notes", label: "Notas de aprofundamento" },
-      ],
+      questions: sector.pain,
       followUps: FOLLOW_UPS,
     },
     {
@@ -96,14 +80,7 @@ export function buildSteps(sector: Sector): Step[] {
       minutes: 5,
       intro: "Quem já paga por alguma solução prova que o problema vale dinheiro.",
       notice: null,
-      questions: [
-        { key: "b3_q1", label: "Que sistemas ou ferramentas usa hoje? (gestão, planilha, agenda, WhatsApp, caderno)" },
-        { key: "b3_q2", label: "Quanto paga por mês em cada um?" },
-        { key: "b3_q3", label: "Do que mais gosta nessas ferramentas? Do que menos gosta?" },
-        { key: "b3_q4", label: "Já trocou de sistema alguma vez? Por quê?" },
-        { key: "b3_q5", label: "Se esses sistemas sumissem amanhã, o que quebraria?" },
-        ...sector.tools,
-      ],
+      questions: sector.tools,
       followUps: [],
     },
     {
@@ -114,11 +91,7 @@ export function buildSteps(sector: Sector): Step[] {
       intro: "Pergunte o preço só depois de ele ter descrito a dor.",
       notice: "Não sugira valores antes de o entrevistado falar.",
       questions: [
-        {
-          key: "b4_q1",
-          label:
-            "Pensando na tarefa mais cara da sua rotina, quanto ela custa para o negócio por mês, em tempo ou em dinheiro perdido?",
-        },
+        sector.valueCost,
         {
           key: "b4_q2",
           label: "Se existisse algo que resolvesse isso de verdade, quanto faria sentido pagar por mês?",
@@ -134,7 +107,7 @@ export function buildSteps(sector: Sector): Step[] {
           label: "E a partir de que valor desconfiaria que é bom demais para ser verdade?",
           price: { field: "price_too_cheap_brl", label: "Valor barato demais (R$/mês)" },
         },
-        { key: "b4_q5", label: "Quem decide uma compra assim? Precisa de mais alguém?" },
+        sector.valueDecider,
       ],
       followUps: [],
     },
@@ -178,7 +151,7 @@ export function buildSteps(sector: Sector): Step[] {
   ];
 }
 
-/** Dores em categorias comuns a todos os setores, para comparar um setor com outro. */
+/** Temas comuns de dor, usados para comparar um setor com outro. A dor de cada setor liga a um tema. */
 export const PAIN_OPTIONS: Option[] = [
   { key: "agenda_faltas", label: "Agenda, faltas e horários vagos" },
   { key: "atendimento", label: "Atendimento e retorno a clientes" },
@@ -221,16 +194,16 @@ export function labelFrom(options: Option[], key: string | null): string {
   return options.find((o) => o.key === key)?.label ?? key;
 }
 
-/** Perguntas universais (as mesmas em todos os setores), na ordem do roteiro. */
+/** Perguntas de priorização e encerramento (iguais em todos os setores), na ordem do roteiro. */
 export const UNIVERSAL_QUESTIONS: Question[] = buildSteps(getSector("geral"))
   .flatMap((s) => s.questions)
-  .filter((q) => !/^b[123]_s\d+$/.test(q.key));
+  .filter((q) => q.key.startsWith("b5_") || q.key.startsWith("c_"));
 
 /** Colunas de perguntas específicas de setor, para a exportação. */
 export const SECTOR_QUESTION_COLUMNS: { column: string; sectorKey: string; key: string; label: string }[] =
   SECTORS.flatMap((s) =>
-    [...s.context, ...s.pain, ...s.tools].map((q) => ({
-      column: `${s.key}_${q.key}`,
+    [...s.context, ...s.pain, ...s.tools, s.valueCost, s.valueDecider].map((q) => ({
+      column: q.key,
       sectorKey: s.key,
       key: q.key,
       label: q.label,

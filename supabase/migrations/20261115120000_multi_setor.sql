@@ -32,9 +32,8 @@ alter table public.interviews
 update public.interviews set sector_key = 'revenda_carros' where sector_key is null;
 update public.interviews set company_size = null where company_size = 'ex_cliente';
 update public.interviews set main_pain_key = null
-where main_pain_key is not null and main_pain_key not in
-  ('agenda_faltas','atendimento','cobranca','documentos','estoque_compras','equipe',
-   'captacao','retencao','precificacao','sistemas','outra');
+where main_pain_key in ('publicacao_multiportais','controle_anuncios','leads_whatsapp',
+  'agenda_visitas','preco_mercado','ficha_veiculo');
 
 -- PARTE 3: regras finais
 alter table public.interviews alter column sector_key set not null;

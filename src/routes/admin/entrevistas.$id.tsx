@@ -11,7 +11,6 @@ import { getInterviewBundle, patchInterview, savePicks, saveAnswers } from "@/li
 import {
   COMMITMENT_OPTIONS,
   OPENING_TIP,
-  PAIN_OPTIONS,
   SEVERITY_OPTIONS,
   buildSteps,
   type PriceField,
@@ -451,7 +450,7 @@ function InterviewPage() {
                     onChange={(e) => updateField({ main_pain_key: e.target.value === "" ? null : e.target.value })}
                   >
                     <option value="">Selecione…</option>
-                    {PAIN_OPTIONS.map((o) => (
+                    {sector.painOptions.map((o) => (
                       <option key={o.key} value={o.key}>
                         {o.label}
                       </option>

@@ -8,7 +8,7 @@ import {
   UNIVERSAL_QUESTIONS,
   labelFrom,
 } from "./questions";
-import { ALL_FEATURES, SECTORS, getSector, sectorDisplayName } from "./sectors";
+import { ALL_FEATURES, SECTORS, getSector, painLabel, painTheme, sectorDisplayName } from "./sectors";
 import type { Interview } from "./types";
 
 export interface PriceStat {
@@ -67,7 +67,7 @@ export interface Analysis {
   features: FeatureStat[];
   prices: PriceStat[];
   willingToPay: number;
-  painAnswers: { interview: Interview; b2_q2: string; b2_q3: string }[];
+  painAnswers: { interview: Interview; items: { label: string; text: string }[] }[];
   decision: Decision | null;
 }
 
@@ -126,21 +126,33 @@ function decide(rows: Interview[], topCount: number): Decision {
   };
 }
 
-function painStats(rows: Interview[]): PainStat[] {
-  return PAIN_OPTIONS.map((o) => {
-    const group = rows.filter((i) => i.main_pain_key === o.key);
-    const sev = group.map((i) => i.pain_severity).filter((v): v is number => typeof v === "number");
-    const avg = sev.length ? sev.reduce((a, b) => a + b, 0) / sev.length : null;
-    return {
-      key: o.key,
-      label: o.label,
-      count: group.length,
-      avgSeverity: avg,
-      willing: group.filter(isWilling).length,
-      score: group.length * (avg ?? 3),
-    };
-  }).sort((a, b) => b.score - a.score || b.count - a.count);
+/** Com um setor escolhido, agrupa pelas dores dele; com todos, agrupa pelos temas comuns. */
+function painStats(rows: Interview[], sectorKey: string): PainStat[] {
+  const groups: { key: string; label: string; rows: Interview[] }[] =
+    sectorKey === "todos"
+      ? PAIN_OPTIONS.map((o) => ({ ...o, rows: rows.filter((i) => painTheme(i.main_pain_key) === o.key) }))
+      : getSector(sectorKey).painOptions.map((o) => ({
+          key: o.key,
+          label: o.label,
+          rows: rows.filter((i) => i.main_pain_key === o.key),
+        }));
+  return groups
+    .map((g) => {
+      const sev = g.rows.map((i) => i.pain_severity).filter((v): v is number => typeof v === "number");
+      const avg = sev.length ? sev.reduce((a, b) => a + b, 0) / sev.length : null;
+      return {
+        key: g.key,
+        label: g.label,
+        count: g.rows.length,
+        avgSeverity: avg,
+        willing: g.rows.filter(isWilling).length,
+        score: g.rows.length * (avg ?? 3),
+      };
+    })
+    .sort((a, b) => b.score - a.score || b.count - a.count);
 }
+
+const isOther = (key: string) => key === "outra" || key.endsWith("_outra");
 
 /** sectorKey "todos" considera todos os setores juntos. */
 export function computeAnalysis(data: AnalysisData, sectorKey: string = "todos"): Analysis {
@@ -156,7 +168,7 @@ export function computeAnalysis(data: AnalysisData, sectorKey: string = "todos")
   const sectors: SectorSummary[] = SECTORS.map((s) => {
     const all = data.interviews.filter((i) => i.sector_key === s.key);
     const done = all.filter((i) => i.status === "concluida");
-    const top = painStats(done).find((p) => p.key !== "outra" && p.count > 0);
+    const top = painStats(done, s.key).find((p) => !isOther(p.key) && p.count > 0);
     return {
       key: s.key,
       label: s.label,
@@ -179,7 +191,7 @@ export function computeAnalysis(data: AnalysisData, sectorKey: string = "todos")
     count: completed.filter((i) => i.commitment_level === o.key).length,
   }));
 
-  const byPain = painStats(completed);
+  const byPain = painStats(completed, sectorKey);
 
   const features: FeatureStat[] = ALL_FEATURES.filter((f) => sectorKey === "todos" || f.sectorKey === sectorKey)
     .map((f) => {
@@ -206,15 +218,17 @@ export function computeAnalysis(data: AnalysisData, sectorKey: string = "todos")
 
   const painAnswers = completed.map((interview) => ({
     interview,
-    b2_q2: answerOf(interview.id, "b2_q2"),
-    b2_q3: answerOf(interview.id, "b2_q3"),
+    items: getSector(interview.sector_key).highlights.map((h) => ({
+      label: h.label,
+      text: answerOf(interview.id, h.key),
+    })),
   }));
 
   // A decisão só faz sentido dentro de um setor: misturar setores esconde a dor comum.
   const decision =
     sectorKey === "todos"
       ? null
-      : decide(completed, byPain.find((p) => p.key !== "outra")?.count ?? 0);
+      : decide(completed, byPain.find((p) => !isOther(p.key))?.count ?? 0);
 
   return {
     total: inScope.length,
@@ -288,7 +302,7 @@ export function buildCsv(data: AnalysisData): string {
       labelFrom(getSector(i.sector_key).sizeOptions, i.company_size),
       i.city,
       i.consent_recording ? "sim" : "não",
-      labelFrom(PAIN_OPTIONS, i.main_pain_key),
+      painLabel(i.main_pain_key),
       i.pain_severity,
       labelFrom(COMMITMENT_OPTIONS, i.commitment_level),
       i.commitment_notes,

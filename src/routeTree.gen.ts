@@ -10,33 +10,108 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAnaliseRouteImport } from './routes/admin/analise'
+import { Route as AdminRoteirosRouteImport } from './routes/admin/roteiros'
+import { Route as AdminEntrevistasIndexRouteImport } from './routes/admin/entrevistas.index'
+import { Route as AdminEntrevistasIdRouteImport } from './routes/admin/entrevistas.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnaliseRoute = AdminAnaliseRouteImport.update({
+  id: '/analise',
+  path: '/analise',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRoteirosRoute = AdminRoteirosRouteImport.update({
+  id: '/roteiros',
+  path: '/roteiros',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEntrevistasIndexRoute = AdminEntrevistasIndexRouteImport.update({
+  id: '/entrevistas/',
+  path: '/entrevistas/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEntrevistasIdRoute = AdminEntrevistasIdRouteImport.update({
+  id: '/entrevistas/$id',
+  path: '/entrevistas/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/analise': typeof AdminAnaliseRoute
+  '/admin/roteiros': typeof AdminRoteirosRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
+  '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/analise': typeof AdminAnaliseRoute
+  '/admin/roteiros': typeof AdminRoteirosRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
+  '/admin/entrevistas': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/analise': typeof AdminAnaliseRoute
+  '/admin/roteiros': typeof AdminRoteirosRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
+  '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/analise'
+    | '/admin/roteiros'
+    | '/admin/'
+    | '/admin/entrevistas/$id'
+    | '/admin/entrevistas/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin/analise'
+    | '/admin/roteiros'
+    | '/admin'
+    | '/admin/entrevistas/$id'
+    | '/admin/entrevistas'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin/analise'
+    | '/admin/roteiros'
+    | '/admin/'
+    | '/admin/entrevistas/$id'
+    | '/admin/entrevistas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +123,72 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analise': {
+      id: '/admin/analise'
+      path: '/analise'
+      fullPath: '/admin/analise'
+      preLoaderRoute: typeof AdminAnaliseRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/roteiros': {
+      id: '/admin/roteiros'
+      path: '/roteiros'
+      fullPath: '/admin/roteiros'
+      preLoaderRoute: typeof AdminRoteirosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/entrevistas/': {
+      id: '/admin/entrevistas/'
+      path: '/entrevistas'
+      fullPath: '/admin/entrevistas/'
+      preLoaderRoute: typeof AdminEntrevistasIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/entrevistas/$id': {
+      id: '/admin/entrevistas/$id'
+      path: '/entrevistas/$id'
+      fullPath: '/admin/entrevistas/$id'
+      preLoaderRoute: typeof AdminEntrevistasIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAnaliseRoute: typeof AdminAnaliseRoute
+  AdminRoteirosRoute: typeof AdminRoteirosRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminEntrevistasIdRoute: typeof AdminEntrevistasIdRoute
+  AdminEntrevistasIndexRoute: typeof AdminEntrevistasIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnaliseRoute: AdminAnaliseRoute,
+  AdminRoteirosRoute: AdminRoteirosRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminEntrevistasIdRoute: AdminEntrevistasIdRoute,
+  AdminEntrevistasIndexRoute: AdminEntrevistasIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

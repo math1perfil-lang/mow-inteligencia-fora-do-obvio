@@ -1,0 +1,12 @@
+{
+  "routes": [
+    { "path": "/", "title": "MOW" },
+    { "path": "/admin", "title": "Admin" },
+    { "path": "/admin/analise", "title": "Análise" },
+    { "path": "/admin/entrevistas", "title": "Entrevistas" },
+    { "path": "/admin/entrevistas/:id", "title": "Entrevista" },
+    { "path": "/admin/roteiros", "title": "Roteiros" },
+    { "path": "/method-factory", "title": "Method Factory · Prévia" },
+    { "path": "/method-factory/brief-preview", "title": "Briefing · Prévia sem envio" }
+  ]
+}

@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as MethodFactoryRouteImport } from './routes/method-factory'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAnaliseRouteImport } from './routes/admin/analise'
 import { Route as AdminRoteirosRouteImport } from './routes/admin/roteiros'
+import { Route as MethodFactoryIndexRouteImport } from './routes/method-factory.index'
+import { Route as MethodFactoryBriefPreviewRouteImport } from './routes/method-factory.brief-preview'
 import { Route as AdminEntrevistasIndexRouteImport } from './routes/admin/entrevistas.index'
 import { Route as AdminEntrevistasIdRouteImport } from './routes/admin/entrevistas.$id'
 
@@ -25,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MethodFactoryRoute = MethodFactoryRouteImport.update({
+  id: '/method-factory',
+  path: '/method-factory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -42,6 +50,17 @@ const AdminRoteirosRoute = AdminRoteirosRouteImport.update({
   path: '/roteiros',
   getParentRoute: () => AdminRoute,
 } as any)
+const MethodFactoryIndexRoute = MethodFactoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MethodFactoryRoute,
+} as any)
+const MethodFactoryBriefPreviewRoute =
+  MethodFactoryBriefPreviewRouteImport.update({
+    id: '/brief-preview',
+    path: '/brief-preview',
+    getParentRoute: () => MethodFactoryRoute,
+  } as any)
 const AdminEntrevistasIndexRoute = AdminEntrevistasIndexRouteImport.update({
   id: '/entrevistas/',
   path: '/entrevistas/',
@@ -56,9 +75,12 @@ const AdminEntrevistasIdRoute = AdminEntrevistasIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/method-factory': typeof MethodFactoryRouteWithChildren
   '/admin/analise': typeof AdminAnaliseRoute
   '/admin/roteiros': typeof AdminRoteirosRoute
+  '/method-factory/brief-preview': typeof MethodFactoryBriefPreviewRoute
   '/admin/': typeof AdminIndexRoute
+  '/method-factory/': typeof MethodFactoryIndexRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
   '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
@@ -66,7 +88,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/analise': typeof AdminAnaliseRoute
   '/admin/roteiros': typeof AdminRoteirosRoute
+  '/method-factory/brief-preview': typeof MethodFactoryBriefPreviewRoute
   '/admin': typeof AdminIndexRoute
+  '/method-factory': typeof MethodFactoryIndexRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
   '/admin/entrevistas': typeof AdminEntrevistasIndexRoute
 }
@@ -74,9 +98,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/method-factory': typeof MethodFactoryRouteWithChildren
   '/admin/analise': typeof AdminAnaliseRoute
   '/admin/roteiros': typeof AdminRoteirosRoute
+  '/method-factory/brief-preview': typeof MethodFactoryBriefPreviewRoute
   '/admin/': typeof AdminIndexRoute
+  '/method-factory/': typeof MethodFactoryIndexRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
   '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
@@ -85,9 +112,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/method-factory'
     | '/admin/analise'
     | '/admin/roteiros'
+    | '/method-factory/brief-preview'
     | '/admin/'
+    | '/method-factory/'
     | '/admin/entrevistas/$id'
     | '/admin/entrevistas/'
   fileRoutesByTo: FileRoutesByTo
@@ -95,16 +125,21 @@ export interface FileRouteTypes {
     | '/'
     | '/admin/analise'
     | '/admin/roteiros'
+    | '/method-factory/brief-preview'
     | '/admin'
+    | '/method-factory'
     | '/admin/entrevistas/$id'
     | '/admin/entrevistas'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/method-factory'
     | '/admin/analise'
     | '/admin/roteiros'
+    | '/method-factory/brief-preview'
     | '/admin/'
+    | '/method-factory/'
     | '/admin/entrevistas/$id'
     | '/admin/entrevistas/'
   fileRoutesById: FileRoutesById
@@ -112,6 +147,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  MethodFactoryRoute: typeof MethodFactoryRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -128,6 +164,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/method-factory': {
+      id: '/method-factory'
+      path: '/method-factory'
+      fullPath: '/method-factory'
+      preLoaderRoute: typeof MethodFactoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -150,6 +193,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/roteiros'
       preLoaderRoute: typeof AdminRoteirosRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/method-factory/': {
+      id: '/method-factory/'
+      path: '/'
+      fullPath: '/method-factory/'
+      preLoaderRoute: typeof MethodFactoryIndexRouteImport
+      parentRoute: typeof MethodFactoryRoute
+    }
+    '/method-factory/brief-preview': {
+      id: '/method-factory/brief-preview'
+      path: '/brief-preview'
+      fullPath: '/method-factory/brief-preview'
+      preLoaderRoute: typeof MethodFactoryBriefPreviewRouteImport
+      parentRoute: typeof MethodFactoryRoute
     }
     '/admin/entrevistas/': {
       id: '/admin/entrevistas/'
@@ -186,9 +243,24 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface MethodFactoryRouteChildren {
+  MethodFactoryBriefPreviewRoute: typeof MethodFactoryBriefPreviewRoute
+  MethodFactoryIndexRoute: typeof MethodFactoryIndexRoute
+}
+
+const MethodFactoryRouteChildren: MethodFactoryRouteChildren = {
+  MethodFactoryBriefPreviewRoute: MethodFactoryBriefPreviewRoute,
+  MethodFactoryIndexRoute: MethodFactoryIndexRoute,
+}
+
+const MethodFactoryRouteWithChildren = MethodFactoryRoute._addFileChildren(
+  MethodFactoryRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  MethodFactoryRoute: MethodFactoryRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

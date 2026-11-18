@@ -1,6 +1,10 @@
 {
   "name": "tanstack_start_ts",
   "private": true,
+  "packageManager": "bun@1.4.4",
+  "trustedDependencies": [
+    "esbuild"
+  ],
   "sideEffects": false,
   "type": "module",
   "scripts": {

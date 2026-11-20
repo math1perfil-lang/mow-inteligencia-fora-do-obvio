@@ -14,9 +14,16 @@ const validBrief: Values = {
   businessModel: "B2B",
   stage: "Em operação",
   userGroups: "Organizações e seus usuários.",
-  pains: "Dificuldade para encontrar a oferta adequada.",
+  pains: JSON.stringify([
+    {
+      title: "Dificuldade para encontrar a oferta adequada",
+      domain: "Comercial e vendas",
+      urgency: "Média",
+      description: "Pessoas não encontram a oferta apropriada.",
+      impact: "Não medido.",
+    },
+  ]),
   desiredResult: "Reduzir o tempo para encontrar uma solução.",
-  priority: "As duas frentes",
   partnerMeasurement: "Não medimos",
   userMeasurement: "Não sei",
   rightsStatus: "Sem material nesta etapa",
@@ -61,7 +68,6 @@ describe("brief-schema", () => {
         "partnerMeasurement",
         "pains",
         "platformDescription",
-        "priority",
         "rightsStatus",
         "stage",
         "successCriteria",
@@ -71,6 +77,38 @@ describe("brief-schema", () => {
     );
     expect(validateBrief(validBrief)).toEqual({});
     expect(validateBrief({ ...validBrief, impact: "", attempts: "" })).toEqual({});
+  });
+
+  it("aceita várias dores em áreas diferentes e área ainda desconhecida", () => {
+    const problems = stepById("problems");
+    const entries = [
+      {
+        title: "Margem abaixo do esperado",
+        domain: "Finanças",
+        urgency: "Alta",
+        description: "A margem não cobre as despesas operacionais.",
+        impact: "Não medido.",
+      },
+      {
+        title: "Canal de aquisição incerto",
+        domain: "Ainda não sei",
+        urgency: "Ainda não sei",
+        description: "Ainda não há clareza sobre a origem de novos clientes.",
+        impact: "",
+      },
+    ];
+    expect(
+      validateStep(problems, { pains: JSON.stringify(entries), desiredResult: "Aprender" }),
+    ).toEqual({});
+    expect(validateStep(problems, { pains: "[]", desiredResult: "Aprender" })).toHaveProperty(
+      "pains",
+    );
+    expect(
+      validateStep(problems, {
+        pains: JSON.stringify([{ ...entries[0], domain: "Área inventada" }]),
+        desiredResult: "Aprender",
+      }),
+    ).toHaveProperty("pains");
   });
 
   it("exige período e unidade quando há dados agregados de parcerias", () => {

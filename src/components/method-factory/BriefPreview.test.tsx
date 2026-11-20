@@ -29,6 +29,32 @@ describe("BriefPreview: estado em memória, sem envio", () => {
     expect(document.getElementById("company")).toHaveValue("");
   });
 
+  it("permite acrescentar uma dor de outra área e a mostra na revisão", () => {
+    render(<BriefPreview />);
+    fireEvent.click(screen.getByRole("button", { name: "Usar exemplo fictício" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar outra dor" }));
+    fireEvent.change(screen.getByLabelText("Nome da dor 3"), {
+      target: { value: "Margem abaixo do esperado" },
+    });
+    fireEvent.change(screen.getByLabelText("Área da dor 3"), {
+      target: { value: "Finanças" },
+    });
+    fireEvent.change(screen.getByLabelText("Prioridade percebida 3"), {
+      target: { value: "Alta" },
+    });
+    fireEvent.change(screen.getByLabelText("Descrição da dor 3"), {
+      target: { value: "A margem não cobre as despesas operacionais." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+    for (let index = 0; index < 3; index += 1) {
+      fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Revisar respostas" }));
+    expect(screen.getByText("Margem abaixo do esperado")).toBeInTheDocument();
+    expect(screen.getByText("Finanças · Prioridade: Alta")).toBeInTheDocument();
+  });
+
   it("percorre o exemplo, revisa e conclui a simulação sem rede ou storage", () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     const storageSpy = vi.spyOn(Storage.prototype, "setItem");
@@ -40,13 +66,23 @@ describe("BriefPreview: estado em memória, sem envio", () => {
     fireEvent.click(screen.getByRole("button", { name: "Revisar respostas" }));
     expect(screen.getByRole("heading", { name: "Revisar. Não enviar." })).toBeInTheDocument();
     expect(screen.getByText("Empresa Exemplo — dados fictícios")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Concluir simulação (não envia)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gerar rascunho local (não envia)" }));
     expect(screen.getByRole("status")).toHaveTextContent(
       "Nenhuma resposta foi enviada ou armazenada",
     );
+    expect(
+      screen.getByRole("heading", { name: /Rascunho de método — Empresa Exemplo/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "1. Medir a linha de base" })).toBeInTheDocument();
+    expect(screen.getByText("Rascunho interno — não aprovado nem validado")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Fontes relacionadas recebidas nesta simulação: 0/),
+    ).toBeInTheDocument();
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(storageSpy).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Simulação concluída — sem envio" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Rascunho local gerado — sem envio" }),
+    ).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Limpar" }));
     expect(document.getElementById("company")).toHaveValue("");
   });

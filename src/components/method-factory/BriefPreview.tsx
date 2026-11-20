@@ -6,11 +6,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   BRIEF_STEPS,
+  PROBLEM_DOMAINS,
+  PROBLEM_URGENCY,
+  parseProblemEntries,
+  serializeProblemEntries,
   validateStep,
   validateBrief,
   visibleFields,
   type Field,
+  type ProblemEntry,
 } from "@/lib/method-factory/brief-schema";
+import { generateMethodDraft, type MethodDraft } from "@/lib/method-factory/analysis";
+import { MethodDraftPreview } from "./MethodDraftPreview";
 
 const DEMO: Record<string, string> = {
   company: "Empresa Exemplo — dados fictícios",
@@ -20,13 +27,28 @@ const DEMO: Record<string, string> = {
   userGroups: "Lojas locais e moradores do bairro (exemplo fictício).",
   payer: "Modelo comercial ainda em avaliação.",
   geography: "Uma cidade fictícia.",
-  pains:
-    "As lojas demonstram interesse, mas não concluem o acordo. Os compradores se cadastram e pouco retornam.",
+  pains: serializeProblemEntries([
+    {
+      title: "Negociações comerciais não avançam",
+      domain: "Comercial e vendas",
+      urgency: "Alta",
+      description:
+        "Empresas demonstram interesse, mas a conversa não chega a um próximo passo acordado.",
+      impact: "Etapa de perda e impacto ainda não medidos.",
+    },
+    {
+      title: "Pouco retorno após o primeiro acesso",
+      domain: "Marketing e publicidade",
+      urgency: "Média",
+      description:
+        "Parte das pessoas chega à plataforma, mas ainda não sabemos o que as faria voltar.",
+      impact: "Retenção e ativação ainda não medidas.",
+    },
+  ]),
   desiredResult:
     "Testar uma proposta de parceria e descobrir que ação representa o primeiro valor para o usuário.",
   impact: "A frequência e o impacto ainda não foram medidos.",
   attempts: "Apresentação comercial genérica e divulgação em redes sociais, sem linha de base.",
-  priority: "As duas frentes",
   partnerTypes: "Lojas com oferta local e disponibilidade para um experimento limitado.",
   partnerValue: "Hipótese: acesso a demanda local para a loja e oferta relevante para o comprador.",
   partnerDefinition: "Acordo de piloto com responsável, escopo e critérios definidos.",
@@ -71,6 +93,9 @@ function BriefField({
     "aria-required": Boolean(field.required),
     "aria-describedby": error ? `${hint} ${errorId}` : hint,
   };
+  if (field.kind === "problem-list") {
+    return <ProblemListField field={field} value={value} error={error} onChange={onChange} />;
+  }
   return (
     <div className="space-y-3">
       <Label htmlFor={field.id} className="text-base leading-relaxed">
@@ -128,12 +153,155 @@ function BriefField({
   );
 }
 
+function ProblemListField({
+  field,
+  value,
+  error,
+  onChange,
+}: {
+  field: Field;
+  value: string;
+  error: string | undefined;
+  onChange: (value: string) => void;
+}) {
+  const savedEntries = parseProblemEntries(value);
+  const entries = savedEntries.length > 0 ? savedEntries : [emptyProblem()];
+
+  function update(index: number, changes: Partial<ProblemEntry>) {
+    const next: ProblemEntry[] = [...entries];
+    const current = next[index];
+    if (!current) return;
+    next[index] = { ...current, ...changes };
+    onChange(serializeProblemEntries(next));
+  }
+
+  return (
+    <fieldset className="space-y-5">
+      <legend className="text-base leading-relaxed">
+        {field.label} <span className="text-white/65">*</span>
+      </legend>
+      <p className="text-sm leading-relaxed text-white/65">
+        {field.help ?? "Descreva cada dor separadamente."}
+      </p>
+      {entries.map((entry, index) => (
+        <section key={index} className="space-y-5 border border-white/20 p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-medium">Dor {index + 1}</h3>
+            {entries.length > 1 ? (
+              <Button
+                type="button"
+                variant="ghost"
+                className="min-h-10 text-xs"
+                aria-label={`Remover dor ${index + 1}`}
+                onClick={() =>
+                  onChange(serializeProblemEntries(entries.filter((_, i) => i !== index)))
+                }
+              >
+                Remover
+              </Button>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`problem-title-${index}`}>Nome da dor {index + 1}</Label>
+            <Input
+              id={`problem-title-${index}`}
+              value={entry.title}
+              maxLength={140}
+              autoComplete="off"
+              placeholder="Ex.: propostas comerciais não avançam"
+              onChange={(event) => update(index, { title: event.target.value })}
+              className="h-12 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+            />
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor={`problem-domain-${index}`}>Área da dor {index + 1}</Label>
+              <select
+                id={`problem-domain-${index}`}
+                value={entry.domain}
+                onChange={(event) => update(index, { domain: event.target.value })}
+                className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <option value="">Selecione ou marque “Ainda não sei”</option>
+                {PROBLEM_DOMAINS.map((domain) => (
+                  <option key={domain} value={domain}>
+                    {domain}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`problem-urgency-${index}`}>Prioridade percebida {index + 1}</Label>
+              <select
+                id={`problem-urgency-${index}`}
+                value={entry.urgency}
+                onChange={(event) => update(index, { urgency: event.target.value })}
+                className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <option value="">Selecione uma opção</option>
+                {PROBLEM_URGENCY.map((urgency) => (
+                  <option key={urgency} value={urgency}>
+                    {urgency}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`problem-description-${index}`}>Descrição da dor {index + 1}</Label>
+            <Textarea
+              id={`problem-description-${index}`}
+              value={entry.description}
+              maxLength={1500}
+              rows={4}
+              placeholder="O que acontece, com quem e em que contexto?"
+              onChange={(event) => update(index, { description: event.target.value })}
+              className="min-h-28 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`problem-impact-${index}`}>Impacto conhecido (opcional)</Label>
+            <Textarea
+              id={`problem-impact-${index}`}
+              value={entry.impact}
+              maxLength={600}
+              rows={3}
+              placeholder="Se não for conhecido ou medido, diga isso."
+              onChange={(event) => update(index, { impact: event.target.value })}
+              className="min-h-24 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+            />
+          </div>
+        </section>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        className="min-h-11"
+        disabled={entries.length >= 20}
+        onClick={() => onChange(serializeProblemEntries([...entries, emptyProblem()]))}
+      >
+        Adicionar outra dor
+      </Button>
+      {error ? (
+        <p className="text-sm font-medium text-white" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </fieldset>
+  );
+}
+
+function emptyProblem(): ProblemEntry {
+  return { title: "", domain: "", urgency: "", description: "", impact: "" };
+}
+
 export function BriefPreview() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [index, setIndex] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [simulated, setSimulated] = useState(false);
+  const [draft, setDraft] = useState<MethodDraft | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const step = BRIEF_STEPS[index];
   const reviewing = index === BRIEF_STEPS.length;
@@ -142,11 +310,16 @@ export function BriefPreview() {
     heading.current?.focus();
   }, [index]);
 
+  useEffect(() => {
+    if (draft) document.getElementById("method-draft-result")?.focus();
+  }, [draft]);
+
   function navigate(next: number) {
     setIndex(next);
     setErrors({});
     setNotice("");
     setSimulated(false);
+    setDraft(null);
   }
 
   function proceed(event: FormEvent<HTMLFormElement>) {
@@ -173,9 +346,16 @@ export function BriefPreview() {
       setNotice("Revise os campos necessários antes de concluir a simulação.");
       return;
     }
+    setDraft(
+      generateMethodDraft({
+        values,
+        pains: parseProblemEntries(values["pains"]),
+        sources: [],
+      }),
+    );
     setSimulated(true);
     setNotice(
-      "Simulação concluída. Nenhuma resposta foi enviada ou armazenada. A revisão abaixo é apenas local; não há convite real nem método gerado.",
+      "Rascunho local gerado com regras determinísticas. Nenhuma resposta foi enviada ou armazenada; fontes e IA não foram consultadas. Revise as limitações antes de interpretar o resultado.",
     );
   }
 
@@ -296,15 +476,40 @@ export function BriefPreview() {
                       {visibleFields(item, values).map((field) => (
                         <div key={field.id}>
                           <dt className="text-xs text-white/55">{field.label}</dt>
-                          <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
-                            {values[field.id]?.trim() || "Não informado (opcional)"}
-                          </dd>
+                          {field.kind === "problem-list" ? (
+                            <dd className="mt-2 space-y-3">
+                              {parseProblemEntries(values[field.id]).map((entry, entryIndex) => (
+                                <div
+                                  key={entryIndex}
+                                  className="border-l border-white/40 pl-3 text-sm leading-relaxed"
+                                >
+                                  <p className="font-medium">
+                                    {entry.title || `Dor ${entryIndex + 1}`}
+                                  </p>
+                                  <p className="text-white/65">
+                                    {entry.domain} · Prioridade: {entry.urgency}
+                                  </p>
+                                  <p className="mt-1 whitespace-pre-wrap break-words">
+                                    {entry.description}
+                                  </p>
+                                  {entry.impact ? (
+                                    <p className="mt-1 text-white/65">Impacto: {entry.impact}</p>
+                                  ) : null}
+                                </div>
+                              ))}
+                            </dd>
+                          ) : (
+                            <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                              {values[field.id]?.trim() || "Não informado (opcional)"}
+                            </dd>
+                          )}
                         </div>
                       ))}
                     </dl>
                   </section>
                 ))}
               </div>
+              {draft ? <MethodDraftPreview draft={draft} /> : null}
               <div className="mt-7 flex gap-3 border border-white/20 p-5 text-sm leading-relaxed text-white/70">
                 <ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
                 <p>
@@ -329,7 +534,9 @@ export function BriefPreview() {
                   onClick={finishSimulation}
                   disabled={simulated}
                 >
-                  {simulated ? "Simulação concluída — sem envio" : "Concluir simulação (não envia)"}
+                  {simulated
+                    ? "Rascunho local gerado — sem envio"
+                    : "Gerar rascunho local (não envia)"}
                 </Button>
               </div>
               <p className="mt-4 text-right text-xs text-white/55">

@@ -1,7 +1,7 @@
 export interface Field {
   id: string;
   label: string;
-  kind: "text" | "textarea" | "select" | "url";
+  kind: "text" | "textarea" | "select" | "url" | "problem-list";
   required?: boolean;
   help?: string;
   options?: readonly string[];
@@ -17,6 +17,57 @@ export interface Step {
 }
 
 export type Values = Record<string, string>;
+
+export interface ProblemEntry {
+  title: string;
+  domain: string;
+  urgency: string;
+  description: string;
+  impact: string;
+}
+
+export const PROBLEM_DOMAINS = [
+  "Comercial e vendas",
+  "Finanças",
+  "Marketing e publicidade",
+  "Estratégia e modelo de negócio",
+  "Operações e processos",
+  "Produto e tecnologia",
+  "Dados e analytics",
+  "Experiência e sucesso do cliente",
+  "Pessoas e organização",
+  "Parcerias e ecossistema",
+  "Jurídico, risco e compliance",
+  "Sustentabilidade e impacto",
+  "Outro",
+  "Ainda não sei",
+] as const;
+
+export const PROBLEM_URGENCY = ["Alta", "Média", "Baixa", "Ainda não sei"] as const;
+
+export function parseProblemEntries(value: string | undefined): ProblemEntry[] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (entry): entry is ProblemEntry =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof entry.title === "string" &&
+        typeof entry.domain === "string" &&
+        typeof entry.urgency === "string" &&
+        typeof entry.description === "string" &&
+        typeof entry.impact === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function serializeProblemEntries(entries: readonly ProblemEntry[]): string {
+  return JSON.stringify(entries);
+}
 
 const MEASUREMENT_OPTIONS = [
   "Não medimos",
@@ -95,9 +146,10 @@ export const BRIEF_STEPS: readonly Step[] = [
     fields: [
       {
         id: "pains",
-        label: "Quais problemas ou fricções são mais importantes?",
-        kind: "textarea",
+        label: "Quais dores a empresa quer explorar?",
+        kind: "problem-list",
         required: true,
+        help: "Cadastre uma ou várias dores. Se não souber a área, selecione “Ainda não sei”; a triagem não depende de escolher um único tema.",
       },
       {
         id: "desiredResult",
@@ -106,21 +158,9 @@ export const BRIEF_STEPS: readonly Step[] = [
         required: true,
       },
       {
-        id: "impact",
-        label: "Qual é o impacto desses problemas hoje?",
-        kind: "textarea",
-      },
-      {
         id: "attempts",
         label: "O que já foi tentado para resolvê-los?",
         kind: "textarea",
-      },
-      {
-        id: "priority",
-        label: "Qual frente merece prioridade agora?",
-        kind: "select",
-        required: true,
-        options: ["Parcerias comerciais", "Aquisição e uso da plataforma", "As duas frentes"],
       },
     ],
   },
@@ -412,6 +452,29 @@ function validateFields(fields: readonly Field[], values: Values): Record<string
 
     if (field.required && trimmedValue.length === 0) {
       errors[field.id] = "Este campo é obrigatório.";
+      continue;
+    }
+
+    if (field.kind === "problem-list") {
+      const entries = parseProblemEntries(value);
+      if (
+        value.length > 50000 ||
+        entries.length === 0 ||
+        entries.length > 20 ||
+        entries.some(
+          (entry) =>
+            !entry.title.trim() ||
+            entry.title.length > 140 ||
+            !PROBLEM_DOMAINS.includes(entry.domain as (typeof PROBLEM_DOMAINS)[number]) ||
+            !PROBLEM_URGENCY.includes(entry.urgency as (typeof PROBLEM_URGENCY)[number]) ||
+            !entry.description.trim() ||
+            entry.description.length > 1500 ||
+            entry.impact.length > 600,
+        )
+      ) {
+        errors[field.id] =
+          "Inclua de 1 a 20 dores. Cada uma precisa de título, área, prioridade e descrição; respeite os limites de texto.";
+      }
       continue;
     }
 

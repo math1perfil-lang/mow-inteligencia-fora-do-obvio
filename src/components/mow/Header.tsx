@@ -32,8 +32,16 @@ export function Header() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:px-10">
-        <a href="#inicio" aria-label="MOW" className="shrink-0">
+        <a href="#inicio" aria-label="MOW Method Factory" className="flex shrink-0 items-center gap-3.5">
           <Logo className="h-[18px]" />
+          <span aria-hidden className="h-8 w-px bg-foreground/40" />
+          <span
+            aria-hidden
+            className="flex flex-col gap-[3px] text-[10px] font-medium uppercase leading-none tracking-[0.24em] text-foreground"
+          >
+            <span>Method</span>
+            <span>Factory</span>
+          </span>
         </a>
 
         <nav aria-label="Principal" className="hidden items-center gap-8 lg:flex">

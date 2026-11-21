@@ -21,11 +21,18 @@ function FactoryLayout() {
       >
         Ir para o conteúdo
       </a>
-      <header className="border-b border-white/15">
+      <header className="border-b border-black/10 bg-white text-black">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
-          <Link to="/method-factory" className="flex items-center gap-4">
-            <span className="text-2xl font-semibold tracking-tighter">MOW</span>
-            <span className="h-6 w-px bg-white/20" aria-hidden="true" />
+          <Link to="/method-factory" aria-label="MOW Method Factory" className="flex items-center gap-4">
+            <img
+              src="/mow-logo-black.png"
+              alt="MOW"
+              width={1780}
+              height={454}
+              className="h-[18px] w-auto select-none"
+              draggable={false}
+            />
+            <span className="h-6 w-px bg-black/30" aria-hidden="true" />
             <span className="font-mono text-[10px] uppercase tracking-[0.14em] sm:text-xs">
               Method Factory
             </span>

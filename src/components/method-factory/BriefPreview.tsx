@@ -101,18 +101,18 @@ function BriefField({
       <Label htmlFor={field.id} className="text-base leading-relaxed">
         {field.label}{" "}
         {field.required ? (
-          <span className="text-white/65">*</span>
+          <span className="text-muted-foreground">*</span>
         ) : (
-          <span className="text-xs font-normal text-white/55">· opcional</span>
+          <span className="text-xs font-normal text-muted-foreground">· opcional</span>
         )}
       </Label>
-      <p id={hint} className="text-sm leading-relaxed text-white/65">
+      <p id={hint} className="text-sm leading-relaxed text-muted-foreground">
         {field.help ?? "Compartilhe contexto, não dados pessoais ou credenciais."}
       </p>
       {field.kind === "select" ? (
         <select
           {...common}
-          className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="h-12 w-full rounded-2xl border border-input bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <option value="">Selecione uma resposta</option>
           {field.options?.map((option) => (
@@ -127,7 +127,7 @@ function BriefField({
           maxLength={limit}
           rows={4}
           placeholder={field.placeholder ?? "Escreva com suas palavras. Se não souber, diga isso."}
-          className="min-h-28 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+          className="min-h-28 border-input bg-white/80 text-base placeholder:text-muted-foreground"
         />
       ) : (
         <Input
@@ -136,16 +136,16 @@ function BriefField({
           maxLength={limit}
           placeholder={field.placeholder ?? "Descreva ou informe que ainda não sabe"}
           autoComplete="off"
-          className="h-12 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+          className="h-12 border-input bg-white/80 text-base placeholder:text-muted-foreground"
         />
       )}
       {error ? (
-        <p id={errorId} className="text-sm font-medium text-white" role="alert">
+        <p id={errorId} className="text-sm font-medium text-foreground" role="alert">
           {error}
         </p>
       ) : null}
       {field.kind === "textarea" ? (
-        <p className="text-right font-mono text-[10px] text-white/50">
+        <p className="text-right font-mono text-[10px] text-muted-foreground">
           {value.length}/{limit} caracteres
         </p>
       ) : null}
@@ -178,13 +178,13 @@ function ProblemListField({
   return (
     <fieldset className="space-y-5">
       <legend className="text-base leading-relaxed">
-        {field.label} <span className="text-white/65">*</span>
+        {field.label} <span className="text-muted-foreground">*</span>
       </legend>
-      <p className="text-sm leading-relaxed text-white/65">
+      <p className="text-sm leading-relaxed text-muted-foreground">
         {field.help ?? "Descreva cada dor separadamente."}
       </p>
       {entries.map((entry, index) => (
-        <section key={index} className="space-y-5 border border-white/20 p-4 sm:p-5">
+        <section key={index} className="space-y-5 glass p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-sm font-medium">Dor {index + 1}</h3>
             {entries.length > 1 ? (
@@ -210,7 +210,7 @@ function ProblemListField({
               autoComplete="off"
               placeholder="Ex.: propostas comerciais não avançam"
               onChange={(event) => update(index, { title: event.target.value })}
-              className="h-12 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+              className="h-12 border-input bg-white/80 text-base placeholder:text-muted-foreground"
             />
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
@@ -220,7 +220,7 @@ function ProblemListField({
                 id={`problem-domain-${index}`}
                 value={entry.domain}
                 onChange={(event) => update(index, { domain: event.target.value })}
-                className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="h-12 w-full rounded-2xl border border-input bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <option value="">Selecione ou marque “Ainda não sei”</option>
                 {PROBLEM_DOMAINS.map((domain) => (
@@ -236,7 +236,7 @@ function ProblemListField({
                 id={`problem-urgency-${index}`}
                 value={entry.urgency}
                 onChange={(event) => update(index, { urgency: event.target.value })}
-                className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="h-12 w-full rounded-2xl border border-input bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <option value="">Selecione uma opção</option>
                 {PROBLEM_URGENCY.map((urgency) => (
@@ -256,7 +256,7 @@ function ProblemListField({
               rows={4}
               placeholder="O que acontece, com quem e em que contexto?"
               onChange={(event) => update(index, { description: event.target.value })}
-              className="min-h-28 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+              className="min-h-28 border-input bg-white/80 text-base placeholder:text-muted-foreground"
             />
           </div>
           <div className="space-y-2">
@@ -268,7 +268,7 @@ function ProblemListField({
               rows={3}
               placeholder="Se não for conhecido ou medido, diga isso."
               onChange={(event) => update(index, { impact: event.target.value })}
-              className="min-h-24 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+              className="min-h-24 border-input bg-white/80 text-base placeholder:text-muted-foreground"
             />
           </div>
         </section>
@@ -283,7 +283,7 @@ function ProblemListField({
         Adicionar outra dor
       </Button>
       {error ? (
-        <p className="text-sm font-medium text-white" role="alert">
+        <p className="text-sm font-medium text-foreground" role="alert">
           {error}
         </p>
       ) : null}
@@ -368,13 +368,17 @@ export function BriefPreview() {
   return (
     <div className="mx-auto max-w-7xl px-5 pt-10 sm:px-8 sm:pt-14">
       <div className="flex flex-wrap items-start justify-between gap-5">
-        <div className="max-w-2xl">
-          <p className="eyebrow text-white/60">Briefing · Entrada de contexto</p>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tighter sm:text-5xl">
+        <div className="mf-rise max-w-2xl">
+          <p className="mf-pill">
+            <span className="mf-dot" aria-hidden="true" />
+            Briefing · Entrada de contexto
+          </p>
+          <h1 className="mt-5 text-4xl font-light leading-tight tracking-tighter sm:text-6xl">
             Antes da solução,
-            <br />a pergunta certa.
+            <br />
+            <span className="mf-grad">a pergunta certa.</span>
           </h1>
-          <p className="mt-4 text-sm leading-relaxed text-white/70">
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
             Uma boa lacuna vale mais que um número inventado. Esta é uma demonstração — não preencha
             com informações reais da empresa.
           </p>
@@ -400,6 +404,9 @@ export function BriefPreview() {
       </div>
       <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:gap-14">
         <aside className="lg:w-56 lg:shrink-0">
+          <div className="mf-prog" aria-hidden="true">
+            <span style={{ width: `${((index + 1) / (BRIEF_STEPS.length + 1)) * 100}%` }} />
+          </div>
           <nav aria-label="Etapas do briefing">
             <ol className="flex gap-2 overflow-x-auto pb-4 lg:flex-col lg:gap-1">
               {[...BRIEF_STEPS.map((item) => item.title), "Revisão local"].map((title, i) => (
@@ -409,7 +416,7 @@ export function BriefPreview() {
                     disabled={i > index}
                     aria-current={i === index ? "step" : undefined}
                     onClick={() => navigate(i)}
-                    className={`flex min-h-12 w-full items-center gap-3 whitespace-nowrap border px-3 py-3 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:text-white/35 ${i === index ? "border-white bg-white text-black" : "border-transparent text-white/65 hover:border-white/20"}`}
+                    className={`flex min-h-12 w-full items-center gap-3 whitespace-nowrap rounded-full border px-4 py-3 text-left text-xs transition-all disabled:cursor-not-allowed disabled:opacity-50 ${i === index ? "border-foreground bg-foreground text-background shadow-lg" : "border-border bg-white/70 text-muted-foreground hover:bg-white hover:text-foreground"}`}
                   >
                     <span className="font-mono text-xs">
                       {i < index ? (
@@ -424,14 +431,19 @@ export function BriefPreview() {
               ))}
             </ol>
           </nav>
-          <p className="mt-4 hidden border-t border-white/15 pt-4 text-xs leading-relaxed text-white/60 lg:block">
+          <p className="mt-4 hidden border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground lg:block">
             Sem áudio, anexos, contatos ou dados identificáveis. Fontes e autorização serão
             revisadas por uma pessoa antes de qualquer análise.
           </p>
         </aside>
-        <div className="min-w-0 flex-1 lg:max-w-3xl">
-          <div className="mb-7 border-b border-white/20 pb-6">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-white/65">
+        <div className="glass relative min-w-0 flex-1 p-6 sm:p-10 lg:max-w-3xl">
+          <div className="mf-badge" aria-hidden="true">
+            Dados
+            <br />
+            fictícios
+          </div>
+          <div className="mb-7 border-b border-border pb-6">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               {index + 1} de {BRIEF_STEPS.length + 1} ·{" "}
               {reviewing ? "Confira antes de simular" : "* Campo necessário"}
             </p>
@@ -442,17 +454,14 @@ export function BriefPreview() {
             >
               {reviewing ? "Revisar. Não enviar." : step?.title}
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/65">
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {reviewing
                 ? "Essas respostas ficam somente nesta página. Nenhuma delas foi recebida pela MOW."
                 : step?.description}
             </p>
           </div>
           {notice ? (
-            <p
-              role="status"
-              className="mb-6 border border-white/30 bg-white/5 p-4 text-sm leading-relaxed"
-            >
+            <p role="status" className="mb-6 glass p-4 text-sm leading-relaxed">
               {notice}
             </p>
           ) : null}
@@ -460,7 +469,7 @@ export function BriefPreview() {
             <div>
               <div className="space-y-7">
                 {BRIEF_STEPS.map((item, stepIndex) => (
-                  <section key={item.id} className="border border-white/20 p-5 sm:p-6">
+                  <section key={item.id} className="glass p-5 sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-base font-medium">{item.title}</h3>
                       <Button
@@ -475,25 +484,27 @@ export function BriefPreview() {
                     <dl className="mt-4 space-y-5">
                       {visibleFields(item, values).map((field) => (
                         <div key={field.id}>
-                          <dt className="text-xs text-white/55">{field.label}</dt>
+                          <dt className="text-xs text-muted-foreground">{field.label}</dt>
                           {field.kind === "problem-list" ? (
                             <dd className="mt-2 space-y-3">
                               {parseProblemEntries(values[field.id]).map((entry, entryIndex) => (
                                 <div
                                   key={entryIndex}
-                                  className="border-l border-white/40 pl-3 text-sm leading-relaxed"
+                                  className="border-l border-foreground/30 pl-3 text-sm leading-relaxed"
                                 >
                                   <p className="font-medium">
                                     {entry.title || `Dor ${entryIndex + 1}`}
                                   </p>
-                                  <p className="text-white/65">
+                                  <p className="text-muted-foreground">
                                     {entry.domain} · Prioridade: {entry.urgency}
                                   </p>
                                   <p className="mt-1 whitespace-pre-wrap break-words">
                                     {entry.description}
                                   </p>
                                   {entry.impact ? (
-                                    <p className="mt-1 text-white/65">Impacto: {entry.impact}</p>
+                                    <p className="mt-1 text-muted-foreground">
+                                      Impacto: {entry.impact}
+                                    </p>
                                   ) : null}
                                 </div>
                               ))}
@@ -510,7 +521,7 @@ export function BriefPreview() {
                 ))}
               </div>
               {draft ? <MethodDraftPreview draft={draft} /> : null}
-              <div className="mt-7 flex gap-3 border border-white/20 p-5 text-sm leading-relaxed text-white/70">
+              <div className="mt-7 flex gap-3 glass p-5 text-sm leading-relaxed text-muted-foreground">
                 <ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
                 <p>
                   Na versão conectada, o envio será limitado por convite e passará pela sua revisão
@@ -539,7 +550,7 @@ export function BriefPreview() {
                     : "Gerar rascunho local (não envia)"}
                 </Button>
               </div>
-              <p className="mt-4 text-right text-xs text-white/55">
+              <p className="mt-4 text-right text-xs text-muted-foreground">
                 Envio real desativado. Não existe registro no banco.
               </p>
             </div>
@@ -563,7 +574,7 @@ export function BriefPreview() {
                   />
                 ))}
               </div>
-              <div className="mt-10 flex items-center justify-between gap-4 border-t border-white/15 pt-6">
+              <div className="mt-10 flex items-center justify-between gap-4 border-t border-border pt-6">
                 <Button
                   type="button"
                   variant="ghost"

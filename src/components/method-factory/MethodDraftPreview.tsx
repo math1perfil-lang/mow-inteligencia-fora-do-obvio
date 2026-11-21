@@ -5,11 +5,11 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
 
   return (
     <section
-      className="mt-10 space-y-6 border-t border-white/20 pt-8"
+      className="mt-10 space-y-6 border-t border-border pt-8"
       aria-labelledby="method-draft-result"
     >
-      <div className="border border-white/25 bg-white/[0.025] p-5 sm:p-7">
-        <p className="eyebrow text-white/60">Resultado local · {draft.engine}</p>
+      <div className="glass p-5 sm:p-7">
+        <p className="eyebrow text-muted-foreground">Resultado local · {draft.engine}</p>
         <h3
           id="method-draft-result"
           tabIndex={-1}
@@ -17,39 +17,44 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
         >
           {draft.title}
         </h3>
-        <p className="mt-3 inline-block border border-white/25 px-3 py-2 text-xs">{draft.status}</p>
-        <p className="mt-5 text-sm leading-relaxed text-white/75">{draft.summary}</p>
-        <p className="mt-5 border-l-2 border-white/60 pl-4 text-sm leading-relaxed text-white/70">
+        <p className="mt-3 inline-block glass px-3 py-2 text-xs">{draft.status}</p>
+        <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{draft.summary}</p>
+        <p className="mt-5 border-l-2 border-foreground/50 pl-4 text-sm leading-relaxed text-muted-foreground">
           Esta simulação roda apenas nesta página com regras determinísticas. Não consultou catálogo
           de fontes, não usou IA, não enviou nem salvou respostas. O resultado é preliminar e exige
           revisão humana.
         </p>
       </div>
 
-      <section className="border border-white/15 p-5 sm:p-6" aria-labelledby="draft-objective">
+      <section className="glass p-5 sm:p-6" aria-labelledby="draft-objective">
         <h4 id="draft-objective" className="text-lg font-medium">
           Objetivo provisório
         </h4>
-        <p className="mt-3 text-sm leading-relaxed text-white/70">{plan.objetivo}</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{plan.objetivo}</p>
       </section>
 
-      <section className="border border-white/15 p-5 sm:p-6" aria-labelledby="draft-pains">
+      <section className="glass p-5 sm:p-6" aria-labelledby="draft-pains">
         <h4 id="draft-pains" className="text-lg font-medium">
           Dores recebidas e atribuição
         </h4>
         <ul className="mt-4 space-y-4">
           {draft.dores_decompostas.map((pain) => (
-            <li key={`${pain.índice}-${pain.título}`} className="border-l border-white/40 pl-4">
+            <li
+              key={`${pain.índice}-${pain.título}`}
+              className="border-l border-foreground/30 pl-4"
+            >
               <p className="text-sm font-medium">
                 {pain.índice}. {pain.título}
               </p>
-              <p className="mt-1 text-xs text-white/65">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {pain.área} · Prioridade percebida: {pain.prioridade_percebida}
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-white/75">{pain.descrição}</p>
-              <p className="mt-2 text-xs leading-relaxed text-white/55">{pain.nota_de_medida}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{pain.descrição}</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {pain.nota_de_medida}
+              </p>
               {pain.impacto_informado ? (
-                <p className="mt-2 text-xs leading-relaxed text-white/65">
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   Impacto informado: {pain.impacto_informado}
                 </p>
               ) : null}
@@ -58,22 +63,19 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
         </ul>
       </section>
 
-      <section className="border border-white/15 p-5 sm:p-6" aria-labelledby="draft-steps">
+      <section className="glass p-5 sm:p-6" aria-labelledby="draft-steps">
         <h4 id="draft-steps" className="text-lg font-medium">
           Rascunho de método
         </h4>
         <ol className="mt-4 space-y-5">
           {plan.passos.map((step) => (
-            <li
-              key={step.etapa}
-              className="border-t border-white/15 pt-4 first:border-0 first:pt-0"
-            >
+            <li key={step.etapa} className="border-t border-border pt-4 first:border-0 first:pt-0">
               <h5 className="text-sm font-medium">{step.etapa}</h5>
-              <p className="mt-2 text-sm leading-relaxed text-white/70">{step.descrição}</p>
-              <p className="mt-2 text-xs leading-relaxed text-white/55">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.descrição}</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                 Responsável sugerido: {step.responsável_sugerido}
               </p>
-              <p className="mt-2 text-xs leading-relaxed text-white/55">
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                 Instrumentos: {step.instrumentos.join("; ")}
               </p>
             </li>
@@ -82,7 +84,7 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
       </section>
 
       {plan.adaptações_por_domínio.length > 0 ? (
-        <section className="border border-white/15 p-5 sm:p-6" aria-labelledby="draft-adaptations">
+        <section className="glass p-5 sm:p-6" aria-labelledby="draft-adaptations">
           <h4 id="draft-adaptations" className="text-lg font-medium">
             Adaptações sugeridas por área
           </h4>
@@ -90,21 +92,26 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
             {plan.adaptações_por_domínio.map((item) => (
               <li key={item.domínio}>
                 <p className="text-sm font-medium">{item.domínio}</p>
-                <p className="mt-1 text-sm leading-relaxed text-white/70">{item.proposta}</p>
-                <p className="mt-1 text-xs text-white/50">{item.atribuição}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {item.proposta}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{item.atribuição}</p>
               </li>
             ))}
           </ul>
         </section>
       ) : null}
 
-      <section className="border border-white/15 p-5 sm:p-6" aria-labelledby="draft-hypotheses">
+      <section className="glass p-5 sm:p-6" aria-labelledby="draft-hypotheses">
         <h4 id="draft-hypotheses" className="text-lg font-medium">
           Hipóteses a testar — não são fatos
         </h4>
         <ul className="mt-4 space-y-3">
           {draft.hipóteses.map((hypothesis) => (
-            <li key={hypothesis.dor_relacionada} className="text-sm leading-relaxed text-white/70">
+            <li
+              key={hypothesis.dor_relacionada}
+              className="text-sm leading-relaxed text-muted-foreground"
+            >
               <span className="font-medium">{hypothesis.dor_relacionada}:</span> {hypothesis.texto}
             </li>
           ))}
@@ -112,7 +119,7 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
       </section>
 
       {draft.lacunas_e_perguntas.length > 0 ? (
-        <section className="border border-white/15 p-5 sm:p-6" aria-labelledby="draft-questions">
+        <section className="glass p-5 sm:p-6" aria-labelledby="draft-questions">
           <h4 id="draft-questions" className="text-lg font-medium">
             Perguntas e lacunas para revisão
           </h4>
@@ -120,18 +127,18 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
             {draft.lacunas_e_perguntas.map((item) => (
               <li key={`${item.pergunta}-${item.motivo}`}>
                 <p className="text-sm font-medium">{item.pergunta}</p>
-                <p className="mt-1 text-xs leading-relaxed text-white/60">{item.motivo}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.motivo}</p>
               </li>
             ))}
           </ul>
         </section>
       ) : null}
 
-      <details className="border border-white/15 p-5 sm:p-6">
+      <details className="glass p-5 sm:p-6">
         <summary className="cursor-pointer text-sm font-medium">
           Fontes, limitações e riscos
         </summary>
-        <div className="mt-4 space-y-4 text-sm leading-relaxed text-white/70">
+        <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
           <p>{draft.disponibilidade_de_fontes}</p>
           <p>
             Fontes relacionadas recebidas nesta simulação: {draft.fontes_relacionadas.length}.

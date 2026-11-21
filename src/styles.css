@@ -237,3 +237,210 @@
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+
+/* ------------------------------------------------------------------ */
+/* Method Factory: tema claro próprio, com vidro, brilho e animações.  */
+/* A classe mf-theme é aplicada ao <html> pela rota /method-factory.   */
+/* ------------------------------------------------------------------ */
+:root.mf-theme {
+  --radius: 1.25rem;
+  --background: #f6f7fa;
+  --foreground: #0f1220;
+  --card: #ffffff;
+  --card-foreground: #0f1220;
+  --popover: #ffffff;
+  --popover-foreground: #0f1220;
+  --primary: #0f1220;
+  --primary-foreground: #ffffff;
+  --secondary: #dde6f6;
+  --secondary-foreground: #0f1220;
+  --muted: #eceef2;
+  --muted-foreground: #4a5064;
+  --accent: #eceef2;
+  --accent-foreground: #0f1220;
+  --border: rgba(15, 18, 32, 0.1);
+  --input: #cfd5e3;
+  --ring: #3b82f6;
+}
+:root.mf-theme body {
+  font-family: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  background: #f6f7fa;
+  -webkit-font-smoothing: antialiased;
+}
+:root.mf-theme .mf-root {
+  background: linear-gradient(180deg, #ffffff 0%, #f6f7fa 38%, #eef1f7 100%);
+}
+.mf-root .eyebrow,
+.mf-root .font-mono {
+  font-family: inherit;
+  letter-spacing: 0.16em;
+}
+.mf-root h1,
+.mf-root h2 {
+  font-weight: 300;
+  letter-spacing: -0.04em;
+}
+.mf-root :focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 3px;
+}
+.mf-root .glass {
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.66);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(15, 18, 32, 0.07), 0 24px 70px rgba(60, 70, 130, 0.12);
+}
+.mf-header {
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+}
+.mf-nav {
+  scrollbar-width: none;
+}
+.mf-nav::-webkit-scrollbar {
+  display: none;
+}
+.mf-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  white-space: nowrap;
+  color: #4a5064;
+  transition: color 0.25s;
+}
+.mf-nav a:hover,
+.mf-nav a.is-current {
+  color: #0f1220;
+}
+.mf-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 6px;
+  height: 2px;
+  width: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #6a5cf2, #3b82f6);
+  transition: width 0.3s ease;
+}
+.mf-nav a:hover::after,
+.mf-nav a.is-current::after {
+  width: 100%;
+}
+/* botões em pílula, com elevação ao passar o mouse */
+.mf-root main button[class*="inline-flex"],
+.mf-root main a[class*="inline-flex"] {
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s, color 0.25s;
+}
+.mf-root main button[class*="inline-flex"]:hover:not(:disabled),
+.mf-root main a[class*="inline-flex"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(59, 92, 240, 0.22);
+}
+.mf-root main button[class*="bg-primary"],
+.mf-root main a[class*="bg-primary"] {
+  box-shadow: 0 10px 30px rgba(15, 18, 32, 0.22);
+}
+.mf-root input,
+.mf-root textarea,
+.mf-root select {
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+}
+.mf-root input:focus,
+.mf-root textarea:focus,
+.mf-root select:focus {
+  outline: none;
+  border-color: #4f6ef2;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(79, 110, 242, 0.18), 0 10px 30px rgba(79, 110, 242, 0.12);
+}
+.mf-glow {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.7;
+  pointer-events: none;
+  animation: mf-drift 20s ease-in-out infinite alternate;
+}
+.mf-g1 { width: 520px; height: 520px; left: -160px; top: 120px; background: radial-gradient(circle, #c9bdff 0%, rgba(201, 189, 255, 0) 70%); }
+.mf-g2 { width: 560px; height: 560px; right: -180px; top: 40px; background: radial-gradient(circle, #a9cbff 0%, rgba(169, 203, 255, 0) 70%); animation-duration: 26s; }
+.mf-g3 { width: 460px; height: 460px; left: 30%; top: 620px; background: radial-gradient(circle, #b8f0de 0%, rgba(184, 240, 222, 0) 70%); animation-duration: 23s; }
+@keyframes mf-drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(40px, 30px, 0) scale(1.12); } }
+@keyframes mf-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes mf-pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 139, 0.5); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 139, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 139, 0); } }
+@keyframes mf-sheen { from { background-position: 0 0; } to { background-position: 100% 0; } }
+@keyframes mf-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+@keyframes mf-spin { to { transform: rotate(360deg); } }
+@keyframes mf-tilt { from { transform: rotate(-18deg) scaleY(0.38); } to { transform: rotate(-8deg) scaleY(0.5); } }
+.mf-rise { animation: mf-rise 0.9s 0.1s both; }
+.mf-rise2 { animation: mf-rise 0.9s 0.25s both; }
+.mf-rise3 { animation: mf-rise 0.9s 0.4s both; }
+.mf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(15, 18, 32, 0.1);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2a3045;
+}
+.mf-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c58b; animation: mf-pulse 2.2s infinite; }
+.mf-grad {
+  background: linear-gradient(95deg, #5b4de0 0%, #2f6df0 55%, #0e9f8e 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: 400;
+  animation: mf-sheen 8s ease-in-out infinite alternate;
+}
+.mf-orb-wrap { display: flex; justify-content: center; align-items: center; min-height: 220px; }
+.mf-orb { position: relative; width: min(280px, 64vw); aspect-ratio: 1; animation: mf-float 7s ease-in-out infinite; }
+.mf-core { position: absolute; inset: 14%; border-radius: 50%; background: conic-gradient(from 210deg, #c4b5ff, #9ec5ff, #b7f2de, #fbd6ff, #c4b5ff); box-shadow: 0 40px 80px rgba(98, 110, 220, 0.35), inset 0 0 40px rgba(255, 255, 255, 0.8); animation: mf-spin 18s linear infinite; }
+.mf-shine { position: absolute; inset: 14%; border-radius: 50%; background: radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.95) 0, rgba(255, 255, 255, 0) 46%); }
+.mf-ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 0 0 1px rgba(99, 110, 200, 0.18), inset 0 0 30px rgba(255, 255, 255, 0.6); transform: rotate(-18deg) scaleY(0.38); animation: mf-tilt 9s ease-in-out infinite alternate; }
+.mf-ring2 { inset: 6%; transform: rotate(24deg) scaleY(0.3); animation-delay: -3s; opacity: 0.8; }
+.mf-badge {
+  position: absolute;
+  right: 16px;
+  top: -40px;
+  display: flex;
+  width: 104px;
+  height: 104px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 50%;
+  text-align: center;
+  background: linear-gradient(145deg, #ffffff, #d9e1ee 60%, #c4cfe3);
+  box-shadow: 0 14px 34px rgba(60, 70, 120, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1a2036;
+  transform: rotate(-9deg);
+  animation: mf-float 6s ease-in-out infinite;
+}
+.mf-prog { height: 4px; margin: 0 0 14px; overflow: hidden; border-radius: 4px; background: rgba(15, 18, 32, 0.08); }
+.mf-prog > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #8a7bff, #3b82f6, #22c58b); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .mf-root *, .mf-root *::before, .mf-root *::after { animation: none !important; transition: none !important; }
+}

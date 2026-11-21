@@ -242,7 +242,9 @@
 /* Method Factory: tema claro próprio, com vidro, brilho e animações.  */
 /* A classe mf-theme é aplicada ao <html> pela rota /method-factory.   */
 /* ------------------------------------------------------------------ */
-:root.mf-theme {
+/* Também em .mf-root: assim a página já nasce clara no servidor, sem piscar escuro. */
+:root.mf-theme,
+.mf-root {
   --radius: 1.25rem;
   --background: #f6f7fa;
   --foreground: #0f1220;
@@ -262,13 +264,15 @@
   --input: #cfd5e3;
   --ring: #3b82f6;
 }
-:root.mf-theme body {
+:root.mf-theme body,
+:root:has(.mf-root) body {
   font-family: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: 0;
   background: #f6f7fa;
   -webkit-font-smoothing: antialiased;
 }
-:root.mf-theme .mf-root {
+.mf-root {
+  color: #0f1220;
   background: linear-gradient(180deg, #ffffff 0%, #f6f7fa 38%, #eef1f7 100%);
 }
 .mf-root .eyebrow,

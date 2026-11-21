@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Logo, useNav } from "./shared";
+import { useNav } from "./shared";
 import { useLang } from "@/i18n/context";
 import { LanguageSwitch } from "./Language";
 import { cn } from "@/lib/utils";
@@ -32,15 +32,13 @@ export function Header() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:px-10">
-        <a href="#inicio" aria-label="MOW Method Factory" className="flex shrink-0 items-center gap-3.5">
-          <Logo className="h-[18px]" />
-          <span aria-hidden className="h-8 w-px bg-foreground/40" />
+        <a href="#inicio" aria-label="MOW" className="shrink-0">
           <span
             aria-hidden
-            className="flex flex-col gap-[3px] text-[10px] font-medium uppercase leading-none tracking-[0.24em] text-foreground"
+            className="block text-[28px] font-extrabold leading-none tracking-[-0.055em] text-foreground"
+            style={{ fontFamily: "'Figtree', var(--font-sans)", fontWeight: 800 }}
           >
-            <span>Method</span>
-            <span>Factory</span>
+            MOW
           </span>
         </a>
 

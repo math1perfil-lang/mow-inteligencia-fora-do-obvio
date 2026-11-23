@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/mow/Header";
 import { Hero } from "@/components/mow/Hero";
 import { About, Difference, Manifesto, Projects, WhatWeDo } from "@/components/mow/Sections";
+import { AcademyShortcut } from "@/components/mow/AcademyShortcut";
 import { Contact } from "@/components/mow/Contact";
 import { Footer } from "@/components/mow/Footer";
 import { LangProvider, useLang } from "@/i18n/context";
@@ -64,6 +65,7 @@ function Page() {
         <WhatWeDo />
         <Projects />
         <Difference />
+        <AcademyShortcut />
         <About />
         <Contact />
       </main>

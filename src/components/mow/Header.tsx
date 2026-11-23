@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Logo, useNav } from "./shared";
 import { useLang } from "@/i18n/context";
 import { LanguageSwitch } from "./Language";
@@ -46,6 +47,12 @@ export function Header() {
               {n.label}
             </a>
           ))}
+          <Link
+            to="/academy"
+            className="relative text-[13px] text-foreground underline-offset-8 hover:underline"
+          >
+            MOW Academy
+          </Link>
           <a
             href="#contato"
             className="border border-border px-4 py-2 text-[13px] transition-colors hover:border-foreground hover:bg-foreground hover:text-background"
@@ -92,6 +99,16 @@ export function Header() {
                 </a>
               </li>
             ))}
+            <li>
+              <Link
+                to="/academy"
+                onClick={() => setOpen(false)}
+                className="flex items-baseline gap-4 border-b border-border py-4 text-3xl font-medium tracking-tight"
+              >
+                <span className="eyebrow text-muted-foreground">0{NAV.length + 1}</span>
+                MOW Academy
+              </Link>
+            </li>
           </ul>
           <a
             href="#contato"

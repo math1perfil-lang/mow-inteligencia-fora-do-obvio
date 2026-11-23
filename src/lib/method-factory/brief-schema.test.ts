@@ -1,19 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
+  BUSINESS_TYPES,
   BRIEF_STEPS,
+  pickVisibleValues,
   type Step,
   type Values,
   validateBrief,
   validateStep,
   visibleFields,
+  visibleSteps,
 } from "./brief-schema";
 
 const validBrief: Values = {
-  company: "Fanaticamente",
-  platformDescription: "Plataforma para conectar oferta e demanda.",
-  businessModel: "B2B",
-  stage: "Em operação",
-  userGroups: "Organizações e seus usuários.",
+  businessType: BUSINESS_TYPES[0],
+  company: "Empresa sintética para teste",
+  platformDescription: "Serviço digital fictício para exercício interno.",
+  businessModel: "Receita por serviços e contratos, se aplicável.",
+  stage: "Em funcionamento",
+  userGroups: "Pessoas e organizações atendidas em cenário sintético.",
+  digitalOffering: "Aplicação fictícia para organizar uma atividade.",
+  digitalJourney: "Cadastro, solicitação, atendimento e conclusão fictícios.",
   pains: JSON.stringify([
     {
       title: "Dificuldade para encontrar a oferta adequada",
@@ -45,9 +51,10 @@ function evidenceErrors(sourceLink: string): Record<string, string> {
 }
 
 describe("brief-schema", () => {
-  it("declara as seis etapas esperadas em ordem", () => {
+  it("declara as etapas gerais e a etapa adaptativa em ordem", () => {
     expect(BRIEF_STEPS.map(({ id }) => id)).toEqual([
       "context",
+      "activity-profile",
       "problems",
       "partnerships",
       "users",
@@ -56,12 +63,102 @@ describe("brief-schema", () => {
     ]);
   });
 
+  it("começa sem atividade selecionada e varia as perguntas por tipo de negócio", () => {
+    const context = stepById("context");
+    const profile = stepById("activity-profile");
+    const businessTypeField = context.fields[0];
+
+    expect(businessTypeField?.id).toBe("businessType");
+    expect(businessTypeField?.options).toEqual(BUSINESS_TYPES);
+    expect(visibleSteps({}).map(({ id }) => id)).not.toContain("activity-profile");
+    expect(validateBrief({})).toHaveProperty("businessType");
+
+    const digital = visibleFields(profile, { businessType: BUSINESS_TYPES[0] }).map(({ id }) => id);
+    expect(digital).toContain("digitalOffering");
+    expect(digital).not.toContain("professionalServices");
+
+    const legal = visibleFields(profile, { businessType: BUSINESS_TYPES[1] }).map(({ id }) => id);
+    expect(legal).toContain("professionalServices");
+    expect(legal).not.toContain("digitalOffering");
+
+    const sales = visibleFields(profile, { businessType: BUSINESS_TYPES[2] }).map(({ id }) => id);
+    expect(sales).toContain("salesProcess");
+    expect(sales).not.toContain("professionalServices");
+
+    const other = visibleFields(profile, { businessType: BUSINESS_TYPES[8] }).map(({ id }) => id);
+    expect(other).toEqual(["otherActivity"]);
+  });
+
+  it("mapeia os nove tipos de atividade para ramos exclusivos e completos", () => {
+    const profile = stepById("activity-profile");
+    const cases: Array<{ businessType: (typeof BUSINESS_TYPES)[number]; fields: string[] }> = [
+      {
+        businessType: BUSINESS_TYPES[0],
+        fields: ["digitalOffering", "digitalJourney", "digitalConstraints"],
+      },
+      {
+        businessType: BUSINESS_TYPES[1],
+        fields: ["professionalServices", "professionalWorkflow", "professionalConstraints"],
+      },
+      {
+        businessType: BUSINESS_TYPES[2],
+        fields: ["salesProcess", "salesChannels", "salesConstraints"],
+      },
+      {
+        businessType: BUSINESS_TYPES[3],
+        fields: ["productionFlow", "productionBottleneck", "productionQuality"],
+      },
+      {
+        businessType: BUSINESS_TYPES[4],
+        fields: ["careServices", "careCapacity", "careConstraints"],
+      },
+      {
+        businessType: BUSINESS_TYPES[5],
+        fields: ["learningOutcome", "learningProcess", "learningConstraints"],
+      },
+      {
+        businessType: BUSINESS_TYPES[6],
+        fields: ["fieldServiceFlow", "fieldServiceCapacity", "fieldServiceQuality"],
+      },
+      {
+        businessType: BUSINESS_TYPES[7],
+        fields: ["socialPurpose", "socialOutcome", "socialConstraints"],
+      },
+      { businessType: BUSINESS_TYPES[8], fields: ["otherActivity"] },
+    ];
+
+    expect(cases.map(({ businessType }) => businessType)).toEqual(BUSINESS_TYPES);
+    expect(visibleFields(profile, {})).toEqual([]);
+
+    for (const { businessType, fields } of cases) {
+      expect(
+        visibleFields(profile, { businessType }).map(({ id }) => id),
+        businessType,
+      ).toEqual(fields);
+    }
+  });
+
+  it("remove valores de ramificações inativas do conjunto visível", () => {
+    const picked = pickVisibleValues({
+      ...validBrief,
+      professionalServices: "Resposta jurídica antiga",
+      salesProcess: "Resposta comercial antiga",
+      partnerMetrics: "Métrica oculta",
+    });
+
+    expect(picked).toHaveProperty("digitalOffering", validBrief["digitalOffering"]);
+    expect(picked).not.toHaveProperty("professionalServices");
+    expect(picked).not.toHaveProperty("salesProcess");
+    expect(picked).not.toHaveProperty("partnerMetrics");
+  });
+
   it("exige os campos obrigatórios e deixa opcionais em branco", () => {
     const errors = validateBrief({});
 
     expect(Object.keys(errors).sort()).toEqual(
       [
         "businessModel",
+        "businessType",
         "company",
         "constraints",
         "desiredResult",
@@ -178,9 +275,14 @@ describe("brief-schema", () => {
     ).toEqual({});
   });
 
-  it("rejeita valores de select que não constam nas opções", () => {
-    const errors = validateBrief({ ...validBrief, businessModel: "modelo inventado" });
-    expect(errors).toHaveProperty("businessModel");
+  it("aceita um modelo de negócio em texto aberto e rejeita opção de estágio inválida", () => {
+    const errors = validateBrief({
+      ...validBrief,
+      businessModel: "Modelo específico descrito livremente pela iniciativa.",
+      stage: "Estágio inventado",
+    });
+    expect(errors).toHaveProperty("stage");
+    expect(errors).not.toHaveProperty("businessModel");
   });
 
   it("aceita URLs HTTP(S) com domínio e rejeita protocolos, hosts ou credenciais não permitidos", () => {
@@ -210,29 +312,32 @@ describe("brief-schema", () => {
     const context = stepById("context");
     expect(
       validateStep(context, {
+        businessType: BUSINESS_TYPES[0],
         company: "c".repeat(500),
         platformDescription: "d".repeat(3000),
-        businessModel: "B2B",
-        stage: "Ideia",
+        businessModel: "Modelo fictício em texto aberto",
+        stage: "Em planejamento",
         userGroups: "g",
       }),
     ).toEqual({});
 
     expect(
       validateStep(context, {
+        businessType: BUSINESS_TYPES[0],
         company: "c".repeat(501),
         platformDescription: "d".repeat(3001),
-        businessModel: "B2B",
-        stage: "Ideia",
+        businessModel: "Modelo fictício em texto aberto",
+        stage: "Em planejamento",
         userGroups: "g",
       }),
     ).toHaveProperty("company");
     expect(
       validateStep(context, {
+        businessType: BUSINESS_TYPES[0],
         company: "c".repeat(501),
         platformDescription: "d".repeat(3001),
-        businessModel: "B2B",
-        stage: "Ideia",
+        businessModel: "Modelo fictício em texto aberto",
+        stage: "Em planejamento",
         userGroups: "g",
       }),
     ).toHaveProperty("platformDescription");

@@ -45,6 +45,18 @@ export const PROBLEM_DOMAINS = [
 
 export const PROBLEM_URGENCY = ["Alta", "Média", "Baixa", "Ainda não sei"] as const;
 
+export const BUSINESS_TYPES = [
+  "Tecnologia e produtos digitais",
+  "Serviços profissionais, incluindo jurídico",
+  "Vendas, comércio e distribuição",
+  "Indústria, produção e construção",
+  "Saúde e cuidado",
+  "Educação e formação",
+  "Serviços locais e operações de campo",
+  "Setor público, associação ou impacto social",
+  "Outro ou ainda não sei",
+] as const;
+
 export function parseProblemEntries(value: string | undefined): ProblemEntry[] {
   if (!value) return [];
   try {
@@ -90,8 +102,17 @@ export const BRIEF_STEPS: readonly Step[] = [
   {
     id: "context",
     title: "Contexto do negócio",
-    description: "Conte o que a plataforma faz, para quem existe e como o negócio funciona hoje.",
+    description:
+      "Conte o que a empresa ou iniciativa realiza, a quem atende e como funciona hoje. Responda conforme a realidade do negócio, sem presumir tecnologia ou formato específico.",
     fields: [
+      {
+        id: "businessType",
+        label: "Qual tipo de atividade ou negócio melhor descreve a realidade atual?",
+        kind: "select",
+        required: true,
+        options: BUSINESS_TYPES,
+        help: "A escolha só define quais perguntas específicas serão exibidas; nenhuma resposta vem preenchida.",
+      },
       {
         id: "company",
         label: "Empresa ou iniciativa",
@@ -101,31 +122,38 @@ export const BRIEF_STEPS: readonly Step[] = [
       },
       {
         id: "platformDescription",
-        label: "O que a plataforma faz?",
+        label: "O que a empresa ou iniciativa oferece ou realiza?",
         kind: "textarea",
         required: true,
-        help: "Descreva a oferta atual ou planejada em palavras simples.",
+        help: "Descreva produtos, serviços, atividades ou resultados, conforme se aplicar.",
       },
       {
         id: "businessModel",
-        label: "Qual é o modelo da plataforma?",
-        kind: "select",
+        label: "Como a atividade se sustenta ou gera valor?",
+        kind: "textarea",
         required: true,
-        options: ["B2B", "B2C", "Marketplace / dois ou mais lados", "Outro", "Não sei"],
+        help: "Descreva receita, financiamento, trocas ou outra forma de sustentação, se houver.",
       },
       {
         id: "stage",
         label: "Em que estágio está?",
         kind: "select",
         required: true,
-        options: ["Ideia", "Protótipo", "Em operação", "Não sei"],
+        options: [
+          "Em planejamento",
+          "Em implantação",
+          "Em funcionamento",
+          "Em mudança ou transição",
+          "Não sei",
+          "Não se aplica",
+        ],
       },
       {
         id: "userGroups",
-        label: "Quais grupos de pessoas ou organizações usam a plataforma?",
+        label: "Quem é atendido, participa ou se beneficia?",
         kind: "textarea",
         required: true,
-        help: "Descreva grupos, sem incluir nomes ou dados pessoais de usuários.",
+        help: "Descreva categorias de pessoas ou organizações, sem incluir dados pessoais.",
       },
       {
         id: "payer",
@@ -136,6 +164,188 @@ export const BRIEF_STEPS: readonly Step[] = [
         id: "geography",
         label: "Em quais regiões atua ou pretende atuar?",
         kind: "text",
+      },
+    ],
+  },
+  {
+    id: "activity-profile",
+    title: "Perguntas específicas da atividade",
+    description:
+      "As perguntas desta etapa mudam conforme o tipo de atividade escolhido. Responda somente ao que se aplicar; não inclua dados pessoais, sigilosos ou identificáveis.",
+    fields: [
+      {
+        id: "digitalOffering",
+        label: "Que produto, serviço ou processo digital é oferecido ou utilizado?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[0] },
+      },
+      {
+        id: "digitalJourney",
+        label: "Quais etapas levam da necessidade inicial ao resultado entregue?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[0] },
+      },
+      {
+        id: "digitalConstraints",
+        label: "Há dependências técnicas, de dados, infraestrutura ou segurança a considerar?",
+        kind: "textarea",
+        when: { field: "businessType", equals: BUSINESS_TYPES[0] },
+      },
+      {
+        id: "professionalServices",
+        label: "Que tipos de serviço ou demanda profissional são atendidos?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[1] },
+      },
+      {
+        id: "professionalWorkflow",
+        label: "Quais etapas levam do primeiro contato à conclusão do serviço?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[1] },
+      },
+      {
+        id: "professionalConstraints",
+        label:
+          "Que deveres de confidencialidade, sigilo, prazo ou conformidade precisam ser respeitados?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[1] },
+        help: "Não inclua nomes, casos concretos, documentos ou dados protegidos.",
+      },
+      {
+        id: "salesProcess",
+        label: "Quais são as etapas da venda e onde costuma haver espera ou perda?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[2] },
+      },
+      {
+        id: "salesChannels",
+        label: "Que canais participam da divulgação, negociação, venda ou pós-venda?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[2] },
+      },
+      {
+        id: "salesConstraints",
+        label: "Que limites de preço, margem, estoque ou relacionamento afetam a operação?",
+        kind: "textarea",
+        when: { field: "businessType", equals: BUSINESS_TYPES[2] },
+      },
+      {
+        id: "productionFlow",
+        label: "Como o produto é produzido ou o serviço é entregue?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[3] },
+      },
+      {
+        id: "productionBottleneck",
+        label:
+          "Que limites de capacidade, materiais, fornecedores ou infraestrutura afetam a entrega?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[3] },
+      },
+      {
+        id: "productionQuality",
+        label: "Como qualidade, retrabalho e segurança são acompanhados, se aplicável?",
+        kind: "textarea",
+        when: { field: "businessType", equals: BUSINESS_TYPES[3] },
+      },
+      {
+        id: "careServices",
+        label: "Que serviços ou cuidados são prestados e qual é o percurso de atendimento?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[4] },
+      },
+      {
+        id: "careCapacity",
+        label: "Como acesso, capacidade e tempo de espera são organizados?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[4] },
+      },
+      {
+        id: "careConstraints",
+        label: "Que requisitos de segurança, privacidade ou conformidade precisam ser respeitados?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[4] },
+        help: "Não inclua prontuários, dados de pacientes ou casos identificáveis.",
+      },
+      {
+        id: "learningOutcome",
+        label: "Que aprendizagem ou competência a atividade busca desenvolver?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[5] },
+      },
+      {
+        id: "learningProcess",
+        label: "Quais etapas compõem a experiência de ensino ou formação?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[5] },
+      },
+      {
+        id: "learningConstraints",
+        label: "Que limites de acesso, participação ou avaliação precisam ser considerados?",
+        kind: "textarea",
+        when: { field: "businessType", equals: BUSINESS_TYPES[5] },
+      },
+      {
+        id: "fieldServiceFlow",
+        label: "Como um serviço local ou de campo é solicitado, organizado e concluído?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[6] },
+      },
+      {
+        id: "fieldServiceCapacity",
+        label: "Que limites de agenda, localização, equipe ou equipamento afetam o atendimento?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[6] },
+      },
+      {
+        id: "fieldServiceQuality",
+        label: "Como a qualidade e a conclusão do serviço são verificadas, se aplicável?",
+        kind: "textarea",
+        when: { field: "businessType", equals: BUSINESS_TYPES[6] },
+      },
+      {
+        id: "socialPurpose",
+        label: "Que finalidade pública, social ou coletiva orienta a atividade?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[7] },
+      },
+      {
+        id: "socialOutcome",
+        label: "Que mudança ou resultado para o público atendido se busca alcançar?",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[7] },
+      },
+      {
+        id: "socialConstraints",
+        label:
+          "Que regras, critérios de elegibilidade ou prestações de contas precisam ser respeitados?",
+        kind: "textarea",
+        when: { field: "businessType", equals: BUSINESS_TYPES[7] },
+      },
+      {
+        id: "otherActivity",
+        label: "Descreva a atividade e os aspectos que devemos compreender primeiro.",
+        kind: "textarea",
+        required: true,
+        when: { field: "businessType", equals: BUSINESS_TYPES[8] },
       },
     ],
   },
@@ -166,9 +376,9 @@ export const BRIEF_STEPS: readonly Step[] = [
   },
   {
     id: "partnerships",
-    title: "Parcerias comerciais",
+    title: "Parcerias e relações relevantes",
     description:
-      "Mapeie o papel das parcerias, o valor trocado e os gargalos sem identificar contatos.",
+      "Se houver parcerias ou outras relações relevantes, descreva o papel delas e os gargalos sem identificar contatos.",
     fields: [
       {
         id: "partnerTypes",
@@ -178,7 +388,7 @@ export const BRIEF_STEPS: readonly Step[] = [
       },
       {
         id: "partnerValue",
-        label: "Que valor a plataforma oferece aos parceiros e recebe deles?",
+        label: "Que valor é trocado entre as partes, se houver parceria?",
         kind: "textarea",
       },
       {
@@ -211,7 +421,7 @@ export const BRIEF_STEPS: readonly Step[] = [
         kind: "text",
         required: true,
         when: AGGREGATE_DATA_CONDITION,
-        placeholder: "Por exemplo: últimos 90 dias",
+        placeholder: "Informe o período, se conhecido",
       },
       {
         id: "partnerUnit",
@@ -219,35 +429,36 @@ export const BRIEF_STEPS: readonly Step[] = [
         kind: "text",
         required: true,
         when: AGGREGATE_DATA_CONDITION,
-        placeholder: "Por exemplo: parcerias ativas",
+        placeholder: "Informe a unidade, se conhecida",
       },
     ],
   },
   {
     id: "users",
-    title: "Aquisição e uso da plataforma",
-    description: "Descreva como os grupos chegam à plataforma, ativam-se e usam a oferta.",
+    title: "Público, atendimento e uso",
+    description:
+      "Descreva, se aplicável, como as pessoas ou organizações conhecem a iniciativa, entram em contato, recebem a oferta e como isso é acompanhado.",
     fields: [
       {
         id: "acquisitionChannels",
-        label: "Como os grupos de usuários descobrem ou chegam à plataforma?",
+        label: "Como as pessoas ou organizações chegam, fazem contato ou acessam a oferta?",
         kind: "textarea",
       },
       {
         id: "activationEvent",
-        label: "Que ação indica que um usuário começou a obter valor?",
+        label: "Que fato indica que a necessidade foi atendida ou que houve valor?",
         kind: "textarea",
       },
       {
         id: "userMeasurement",
-        label: "Como medem aquisição, ativação ou uso?",
+        label: "Há acompanhamento sobre procura, atendimento, entrega ou uso?",
         kind: "select",
         required: true,
         options: MEASUREMENT_OPTIONS,
       },
       {
         id: "userMetrics",
-        label: "Quais métricas agregadas estão disponíveis?",
+        label: "Quais informações agregadas estão disponíveis, se houver?",
         kind: "textarea",
         when: USER_AGGREGATE_DATA_CONDITION,
         help: "Informe apenas dados agregados, sem identificar pessoas.",
@@ -258,15 +469,15 @@ export const BRIEF_STEPS: readonly Step[] = [
         kind: "text",
         required: true,
         when: USER_AGGREGATE_DATA_CONDITION,
-        placeholder: "Por exemplo: último mês",
+        placeholder: "Informe o período, se conhecido",
       },
       {
         id: "userUnit",
-        label: "Qual é a unidade das métricas?",
+        label: "Qual é a unidade dessas informações?",
         kind: "text",
         required: true,
         when: USER_AGGREGATE_DATA_CONDITION,
-        placeholder: "Por exemplo: usuários ativos por mês",
+        placeholder: "Informe a unidade, se conhecida",
       },
     ],
   },
@@ -436,6 +647,17 @@ export function visibleFields(step: Step, values: Values): readonly Field[] {
   );
 }
 
+export function visibleSteps(values: Values): readonly Step[] {
+  return BRIEF_STEPS.filter((step) => visibleFields(step, values).length > 0);
+}
+
+export function pickVisibleValues(values: Values): Values {
+  const activeIds = new Set(
+    visibleSteps(values).flatMap((step) => visibleFields(step, values).map((field) => field.id)),
+  );
+  return Object.fromEntries(Object.entries(values).filter(([fieldId]) => activeIds.has(fieldId)));
+}
+
 function maxLengthFor(field: Field): number {
   if (field.kind === "url") return MAX_URL_LENGTH;
   if (field.kind === "textarea") return MAX_TEXTAREA_LENGTH;
@@ -504,7 +726,7 @@ export function validateStep(step: Step, values: Values): Record<string, string>
 
 export function validateBrief(values: Values): Record<string, string> {
   const errors: Record<string, string> = {};
-  for (const step of BRIEF_STEPS) {
+  for (const step of visibleSteps(values)) {
     Object.assign(errors, validateStep(step, values));
   }
   return errors;

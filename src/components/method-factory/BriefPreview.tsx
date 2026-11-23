@@ -5,68 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  BRIEF_STEPS,
   PROBLEM_DOMAINS,
   PROBLEM_URGENCY,
   parseProblemEntries,
+  pickVisibleValues,
   serializeProblemEntries,
   validateStep,
   validateBrief,
   visibleFields,
+  visibleSteps,
   type Field,
   type ProblemEntry,
 } from "@/lib/method-factory/brief-schema";
 import { generateMethodDraft, type MethodDraft } from "@/lib/method-factory/analysis";
 import { MethodDraftPreview } from "./MethodDraftPreview";
-
-const DEMO: Record<string, string> = {
-  company: "Empresa Exemplo — dados fictícios",
-  platformDescription: "Plataforma fictícia para conectar lojas de bairro a compradores locais.",
-  businessModel: "Marketplace / dois ou mais lados",
-  stage: "Protótipo",
-  userGroups: "Lojas locais e moradores do bairro (exemplo fictício).",
-  payer: "Modelo comercial ainda em avaliação.",
-  geography: "Uma cidade fictícia.",
-  pains: serializeProblemEntries([
-    {
-      title: "Negociações comerciais não avançam",
-      domain: "Comercial e vendas",
-      urgency: "Alta",
-      description:
-        "Empresas demonstram interesse, mas a conversa não chega a um próximo passo acordado.",
-      impact: "Etapa de perda e impacto ainda não medidos.",
-    },
-    {
-      title: "Pouco retorno após o primeiro acesso",
-      domain: "Marketing e publicidade",
-      urgency: "Média",
-      description:
-        "Parte das pessoas chega à plataforma, mas ainda não sabemos o que as faria voltar.",
-      impact: "Retenção e ativação ainda não medidas.",
-    },
-  ]),
-  desiredResult:
-    "Testar uma proposta de parceria e descobrir que ação representa o primeiro valor para o usuário.",
-  impact: "A frequência e o impacto ainda não foram medidos.",
-  attempts: "Apresentação comercial genérica e divulgação em redes sociais, sem linha de base.",
-  partnerTypes: "Lojas com oferta local e disponibilidade para um experimento limitado.",
-  partnerValue: "Hipótese: acesso a demanda local para a loja e oferta relevante para o comprador.",
-  partnerDefinition: "Acordo de piloto com responsável, escopo e critérios definidos.",
-  partnerBottleneck: "Não sabemos em que etapa a negociação perde força.",
-  partnerMeasurement: "Não medimos",
-  acquisitionChannels: "Indicações e redes sociais (exemplo fictício).",
-  activationEvent: "Ainda não definido. Não confundir cadastro com percepção de valor.",
-  userMeasurement: "Não medimos",
-  materialsDescription: "Nenhum material enviado. Exemplo totalmente fictício.",
-  rightsStatus: "Sem material nesta etapa",
-  constraints:
-    "Não usar contatos ou dados pessoais. Executar um experimento pequeno antes de ampliar o investimento.",
-  resources: "Equipe e orçamento a confirmar.",
-  horizon: "Prazo a definir depois do diagnóstico.",
-  successCriteria:
-    "Identificar o gargalo da negociação e definir uma métrica de ativação; metas só após medir a linha de base.",
-  restrictions: "Uso interno. Não publicar caso ou resultados.",
-};
 
 function BriefField({
   field,
@@ -303,8 +255,9 @@ export function BriefPreview() {
   const [simulated, setSimulated] = useState(false);
   const [draft, setDraft] = useState<MethodDraft | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
-  const step = BRIEF_STEPS[index];
-  const reviewing = index === BRIEF_STEPS.length;
+  const steps = visibleSteps(values);
+  const step = steps[index];
+  const reviewing = index === steps.length;
 
   useEffect(() => {
     heading.current?.focus();
@@ -338,7 +291,7 @@ export function BriefPreview() {
   function finishSimulation() {
     const found = validateBrief(values);
     if (Object.keys(found).length) {
-      const incomplete = BRIEF_STEPS.findIndex(
+      const incomplete = steps.findIndex(
         (item) => Object.keys(validateStep(item, values)).length > 0,
       );
       setIndex(Math.max(0, incomplete));
@@ -348,7 +301,7 @@ export function BriefPreview() {
     }
     setDraft(
       generateMethodDraft({
-        values,
+        values: pickVisibleValues(values),
         pains: parseProblemEntries(values["pains"]),
         sources: [],
       }),
@@ -384,18 +337,6 @@ export function BriefPreview() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="min-h-11"
-            onClick={() => {
-              setValues({ ...DEMO });
-              navigate(0);
-              setNotice("Exemplo fictício carregado. Os dados não representam a Fanaticamente.");
-            }}
-          >
-            Usar exemplo fictício
-          </Button>
           <Button type="button" variant="ghost" className="min-h-11" onClick={reset}>
             <RotateCcw aria-hidden="true" />
             Limpar
@@ -405,11 +346,11 @@ export function BriefPreview() {
       <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:gap-14">
         <aside className="lg:w-56 lg:shrink-0">
           <div className="mf-prog" aria-hidden="true">
-            <span style={{ width: `${((index + 1) / (BRIEF_STEPS.length + 1)) * 100}%` }} />
+            <span style={{ width: `${((index + 1) / (steps.length + 1)) * 100}%` }} />
           </div>
           <nav aria-label="Etapas do briefing">
             <ol className="flex gap-2 overflow-x-auto pb-4 lg:flex-col lg:gap-1">
-              {[...BRIEF_STEPS.map((item) => item.title), "Revisão local"].map((title, i) => (
+              {[...steps.map((item) => item.title), "Revisão local"].map((title, i) => (
                 <li key={title}>
                   <button
                     type="button"
@@ -444,7 +385,7 @@ export function BriefPreview() {
           </div>
           <div className="mb-7 border-b border-border pb-6">
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              {index + 1} de {BRIEF_STEPS.length + 1} ·{" "}
+              {index + 1} de {steps.length + 1} ·{" "}
               {reviewing ? "Confira antes de simular" : "* Campo necessário"}
             </p>
             <h2
@@ -468,7 +409,7 @@ export function BriefPreview() {
           {reviewing ? (
             <div>
               <div className="space-y-7">
-                {BRIEF_STEPS.map((item, stepIndex) => (
+                {steps.map((item, stepIndex) => (
                   <section key={item.id} className="glass p-5 sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-base font-medium">{item.title}</h3>
@@ -564,7 +505,7 @@ export function BriefPreview() {
                     value={values[field.id] ?? ""}
                     error={errors[field.id]}
                     onChange={(value) => {
-                      setValues((current) => ({ ...current, [field.id]: value }));
+                      setValues((current) => pickVisibleValues({ ...current, [field.id]: value }));
                       setErrors((current) => {
                         const next = { ...current };
                         delete next[field.id];
@@ -586,7 +527,7 @@ export function BriefPreview() {
                   Voltar
                 </Button>
                 <Button type="submit" className="min-h-12 px-6">
-                  {index === BRIEF_STEPS.length - 1 ? "Revisar respostas" : "Continuar"}
+                  {index === steps.length - 1 ? "Revisar respostas" : "Continuar"}
                   <ArrowRight aria-hidden="true" />
                 </Button>
               </div>

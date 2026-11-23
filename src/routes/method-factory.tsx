@@ -1,6 +1,8 @@
-import { useEffect } from "react";
-import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Link, Outlet, createFileRoute, useRouterState } from "@tanstack/react-router";
 import { ArrowUpRight, FlaskConical } from "lucide-react";
+import { checkFactoryOperatorAccess } from "@/lib/method-factory/workflow.functions";
+import { useOpenAlexOwnerAccess } from "@/lib/mow-gki/use-openalex-owner-access";
 
 export const Route = createFileRoute("/method-factory")({
   head: () => ({
@@ -13,15 +15,76 @@ export const Route = createFileRoute("/method-factory")({
   component: FactoryLayout,
 });
 
-function FactoryLayout() {
+export function FactoryLayout() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isPreview = pathname.endsWith("/brief-preview");
+  const isOpenAlex = pathname === "/method-factory/openalex";
+  const isClientIntake = pathname === "/method-factory/intake";
+  const isPublicFactoryPath =
+    isClientIntake ||
+    pathname === "/method-factory/review" ||
+    pathname === "/method-factory/reset-password";
+  const requiresOperator = pathname.startsWith("/method-factory") && !isPublicFactoryPath;
+  const [operatorGate, setOperatorGate] = useState<{
+    pathname: string;
+    status: "checking" | "allowed" | "denied";
+  }>({ pathname: "", status: "checking" });
+
   // Tema claro só nesta área: a classe no <html> vale também para diálogos e avisos.
   useEffect(() => {
     document.documentElement.classList.add("mf-theme");
     return () => document.documentElement.classList.remove("mf-theme");
   }, []);
 
+  useEffect(() => {
+    if (!requiresOperator) return;
+    let cancelled = false;
+    setOperatorGate({ pathname, status: "checking" });
+    void checkFactoryOperatorAccess({ data: {} })
+      .then(() => {
+        if (!cancelled) setOperatorGate({ pathname, status: "allowed" });
+      })
+      .catch(() => {
+        if (!cancelled) setOperatorGate({ pathname, status: "denied" });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, requiresOperator]);
+
+  if (isPublicFactoryPath) {
+    return (
+      <div className="min-h-screen bg-[#101010] text-white">
+        <main id="factory-content">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
+  const operatorGateStatus = operatorGate.pathname === pathname ? operatorGate.status : "checking";
+  if (requiresOperator && operatorGateStatus !== "allowed") {
+    return (
+      <div className="mf-root relative min-h-screen overflow-hidden bg-background text-foreground">
+        <main className="mx-auto max-w-2xl px-5 py-16 sm:px-8" aria-live="polite">
+          <p className="eyebrow text-muted-foreground">Method Factory</p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+            {operatorGateStatus === "checking" ? "Verificando acesso" : "Área indisponível"}
+          </h1>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            {operatorGateStatus === "checking"
+              ? "Aguarde enquanto verificamos a autorização desta página."
+              : "Esta página não está disponível por este link."}
+          </p>
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className="mf-root relative min-h-screen overflow-hidden bg-background text-foreground">
+    <div
+      className={`mf-root relative min-h-screen overflow-hidden ${isOpenAlex ? "bg-[#101010] text-white" : "bg-background text-foreground"}`}
+    >
       <div className="mf-glow mf-g1" aria-hidden="true" />
       <div className="mf-glow mf-g2" aria-hidden="true" />
       <div className="mf-glow mf-g3" aria-hidden="true" />
@@ -66,6 +129,10 @@ function FactoryLayout() {
             <Link to="/method-factory/brief-preview" activeProps={{ className: "is-current" }}>
               Briefing <ArrowUpRight className="ml-1 inline size-3.5" aria-hidden="true" />
             </Link>
+            <Link to="/method-factory/review" activeProps={{ className: "is-current" }}>
+              Revisão interna
+            </Link>
+            <OpenAlexOwnerLink />
           </nav>
         </div>
       </header>
@@ -73,13 +140,28 @@ function FactoryLayout() {
         <div className="mf-rise glass flex items-start gap-3.5 px-5 py-3.5 text-[15px] leading-relaxed text-muted-foreground">
           <FlaskConical className="mt-0.5 size-5 shrink-0 text-[#3a3fb8]" aria-hidden="true" />
           <p>
-            <strong className="font-semibold text-foreground">Protótipo sem persistência.</strong>{" "}
-            Use apenas dados fictícios. As respostas ficam somente na memória desta página: não são
-            enviadas, salvas nem analisadas por IA. Recarregar ou sair apaga tudo.
+            {isPreview ? (
+              <>
+                <strong className="font-semibold text-foreground">
+                  Protótipo sem persistência.
+                </strong>{" "}
+                Use somente dados fictícios. As respostas ficam na memória desta página; não são
+                enviadas nem salvas.
+              </>
+            ) : (
+              <>
+                <strong className="font-semibold text-foreground">Área interna da Factory.</strong>{" "}
+                Revisão e OpenAlex exigem autorização verificada no servidor. A busca aceita somente
+                termos temáticos curtos e retorna metadados bibliográficos temporários.
+              </>
+            )}
           </p>
         </div>
       </div>
-      <main id="factory-content" className="relative z-10">
+      <main
+        id="factory-content"
+        className={`relative z-10 ${isOpenAlex ? "bg-[#101010] text-white" : ""}`}
+      >
         <Outlet />
       </main>
       <footer className="relative z-10 mt-16 border-t border-border px-5 py-6 sm:px-8">
@@ -89,5 +171,16 @@ function FactoryLayout() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function OpenAlexOwnerLink() {
+  const access = useOpenAlexOwnerAccess();
+  if (access.status !== "allowed") return null;
+
+  return (
+    <Link to="/method-factory/openalex" activeProps={{ className: "is-current" }}>
+      OpenAlex
+    </Link>
   );
 }

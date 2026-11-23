@@ -86,6 +86,14 @@ describe("analyzeMethodBrief", () => {
     expect(result.sinais_de_dependência).toHaveLength(1);
     expect(result.sinais_de_dependência[0]?.regra).toBe("aquisição-conversão");
     expect(result.sinais_de_dependência[0]?.natureza).toContain("não é fato confirmado");
+    expect(result.plano_de_conhecimento.candidateAreas).toContain("Gestão de processos");
+    expect(result.plano_de_conhecimento.conditionalAreas).toContain(
+      "Logística e cadeia de suprimentos",
+    );
+    expect(result.plano_de_conhecimento.materialPriority.primaryEvidence).toContain(
+      "Artigos científicos",
+    );
+    expect(result.plano_de_conhecimento.status).toContain("nenhuma fonte pesquisada");
     expect(result.rascunho_de_método.passos.map((step) => step.etapa)).toEqual([
       "1. Medir a linha de base",
       "2. Mapear processo ou jornada",
@@ -97,6 +105,34 @@ describe("analyzeMethodBrief", () => {
         (item) => item.atribuição === "Proposta MOW; não atribuída a uma fonte",
       ),
     ).toBe(true);
+  });
+
+  it("corresponde etiquetas de áreas de conhecimento, mas não ativa áreas condicionais", () => {
+    const knowledgeAreaSource: MethodFactorySource = {
+      ...sources[0]!,
+      id: "knowledge-area-tag",
+      title: "Fonte sintética marcada com área de processo",
+      domain_tags: ["Gestão de processos"],
+    };
+    const conditionalAreaSource: MethodFactorySource = {
+      ...sources[0]!,
+      id: "conditional-area-tag",
+      title: "Fonte sintética marcada com logística condicional",
+      domain_tags: ["Logística e cadeia de suprimentos"],
+    };
+    const result = analyzeMethodBrief({
+      values,
+      pains: [problems[2]!],
+      sources: [knowledgeAreaSource, conditionalAreaSource],
+    });
+
+    expect(result.fontes_relacionadas.map((source) => source.id)).toContain("knowledge-area-tag");
+    expect(result.fontes_relacionadas.map((source) => source.id)).not.toContain(
+      "conditional-area-tag",
+    );
+    expect(result.plano_de_conhecimento.conditionalAreas).toContain(
+      "Logística e cadeia de suprimentos",
+    );
   });
 
   it("trata fontes públicas e pendentes somente como referências de metadados, respeitando direitos", () => {

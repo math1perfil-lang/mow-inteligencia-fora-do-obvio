@@ -1,4 +1,5 @@
 import type { ProblemEntry, Values } from "./brief-schema";
+import { selectKnowledgeForProblems, type KnowledgeSelection } from "./knowledge-selection";
 
 export interface KnowledgeSource {
   id: string;
@@ -116,6 +117,7 @@ export interface MethodFactoryAnalysis {
   version: 1;
   engine: "rules-v1";
   status: "Rascunho interno — não aprovado nem validado";
+  plano_de_conhecimento: KnowledgeSelection;
   resumo_factual: {
     atribuição: "Briefing fornecido; não verificado independentemente";
     texto: string;
@@ -137,10 +139,10 @@ export interface MethodFactoryAnalysis {
 
 const FIELD_LABELS: Readonly<Record<string, string>> = {
   company: "Empresa ou iniciativa",
-  platformDescription: "Descrição da plataforma",
+  platformDescription: "Descrição da oferta ou atividade",
   businessModel: "Modelo de negócio",
   stage: "Estágio informado",
-  userGroups: "Grupos de usuários informados",
+  userGroups: "Público, participantes ou beneficiários informados",
   payer: "Pagador e valor informado",
   geography: "Região informada",
   desiredResult: "Resultado desejado informado",
@@ -153,12 +155,12 @@ const FIELD_LABELS: Readonly<Record<string, string>> = {
   partnerMetrics: "Métricas de parcerias informadas",
   partnerPeriod: "Período das métricas de parcerias informado",
   partnerUnit: "Unidade das métricas de parcerias informada",
-  acquisitionChannels: "Canais de aquisição informados",
-  activationEvent: "Evento de ativação informado",
-  userMeasurement: "Medição de usuários informada",
-  userMetrics: "Métricas de usuários informadas",
-  userPeriod: "Período das métricas de usuários informado",
-  userUnit: "Unidade das métricas de usuários informada",
+  acquisitionChannels: "Formas de contato ou acesso informadas",
+  activationEvent: "Sinal de valor ou atendimento informado",
+  userMeasurement: "Acompanhamento de procura, atendimento ou uso informado",
+  userMetrics: "Informações agregadas de procura, atendimento ou uso informadas",
+  userPeriod: "Período das informações de procura, atendimento ou uso informado",
+  userUnit: "Unidade das informações de procura, atendimento ou uso informada",
   sourceLink: "Link de referência informado",
   materialsDescription: "Descrição de materiais informada",
   rightsStatus: "Status de direitos informado",
@@ -351,9 +353,9 @@ function makeQuestions(values: Values, problems: readonly ProblemEntry[]): Clari
     if (!isNonEmpty(values["userMetrics"])) {
       questions.push({
         pergunta:
-          "Que indicador agregado de aquisição, ativação ou uso pode ser definido para a linha de base, ou confirmam que ainda não há métrica?",
+          "Que indicador agregado de procura, atendimento, entrega ou uso pode ser definido como referência, ou confirmam que ainda não há medida?",
         motivo:
-          "Não há métrica de usuários descrita no briefing; não se presume que exista medição.",
+          "Não há medida descrita no briefing; não se presume que exista um sistema de acompanhamento.",
       });
     }
     if (
@@ -361,8 +363,8 @@ function makeQuestions(values: Values, problems: readonly ProblemEntry[]): Clari
       !isNonEmpty(values["userPeriod"])
     ) {
       questions.push({
-        pergunta: "A que período se referem os dados agregados de usuários?",
-        motivo: "O período é necessário para interpretar uma linha de base.",
+        pergunta: "A que período se referem as informações agregadas?",
+        motivo: "O período é necessário para interpretar essas informações.",
       });
     }
   }
@@ -420,12 +422,14 @@ function sourceMayBeUsedInternally(source: MethodFactorySource): boolean {
 function makeRelatedSources(
   sources: readonly MethodFactorySource[],
   problems: readonly ProblemEntry[],
+  knowledgeSelection: KnowledgeSelection,
 ): RelatedSource[] {
   const painDomains = new Set(problems.map((problem) => normalize(problem.domain)));
+  const candidateKnowledgeAreas = new Set(knowledgeSelection.candidateAreas.map(normalize));
   return sources
     .map((source) => {
-      const matchingDomains = unique(source.domain_tags).filter((tag) =>
-        painDomains.has(normalize(tag)),
+      const matchingDomains = unique(source.domain_tags).filter(
+        (tag) => painDomains.has(normalize(tag)) || candidateKnowledgeAreas.has(normalize(tag)),
       );
       if (matchingDomains.length === 0) return undefined;
       const eligible = sourceMayBeUsedInternally(source);
@@ -624,10 +628,11 @@ function makeMethod(values: Values, problems: readonly ProblemEntry[]): MethodPl
  */
 export function analyzeMethodBrief(input: AnalysisInput): MethodFactoryAnalysis {
   const facts = makeFacts(input.values);
+  const knowledgeSelection = selectKnowledgeForProblems(input.pains);
   const summaryText = facts.length
     ? facts.map((fact) => `${fact.campo}: ${fact.valor}`).join("; ")
     : "O briefing não contém campos textuais preenchidos. Nenhum fato contextual foi acrescentado.";
-  const relatedSources = makeRelatedSources(input.sources, input.pains);
+  const relatedSources = makeRelatedSources(input.sources, input.pains, knowledgeSelection);
   const hasEligibleSource = relatedSources.some((source) => source.uso_interno_elegível);
 
   return {
@@ -643,6 +648,7 @@ export function analyzeMethodBrief(input: AnalysisInput): MethodFactoryAnalysis 
     lacunas_e_perguntas: makeQuestions(input.values, input.pains),
     hipóteses: makeHypotheses(input.pains),
     sinais_de_dependência: makeDependencies(input.pains),
+    plano_de_conhecimento: knowledgeSelection,
     fontes_relacionadas: relatedSources,
     disponibilidade_de_fontes: hasEligibleSource
       ? "Há fontes relacionadas por domínio cujos metadados declaram status e uso interno elegíveis. São referências de metadados, não evidência do caso nem validação do método."

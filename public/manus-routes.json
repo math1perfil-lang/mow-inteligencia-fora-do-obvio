@@ -7,6 +7,10 @@
     { "path": "/admin/entrevistas/:id", "title": "Entrevista" },
     { "path": "/admin/roteiros", "title": "Roteiros" },
     { "path": "/method-factory", "title": "Method Factory · Prévia" },
-    { "path": "/method-factory/brief-preview", "title": "Briefing · Prévia sem envio" }
+    { "path": "/method-factory/brief-preview", "title": "Briefing · Prévia sem envio" },
+    { "path": "/method-factory/intake", "title": "Briefing por convite" },
+    { "path": "/method-factory/openalex", "title": "OpenAlex · Uso interno" },
+    { "path": "/method-factory/reset-password", "title": "Redefinir senha" },
+    { "path": "/method-factory/review", "title": "Revisão interna" }
   ]
 }

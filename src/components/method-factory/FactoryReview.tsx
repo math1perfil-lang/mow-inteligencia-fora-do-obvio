@@ -432,7 +432,7 @@ export function FactoryReview() {
   if (!authReady) {
     return (
       <PanelShell>
-        <p role="status" className="text-sm text-white/70">
+        <p role="status" className="text-sm text-muted-foreground">
           Verificando sessão…
         </p>
       </PanelShell>
@@ -443,15 +443,15 @@ export function FactoryReview() {
     return (
       <PanelShell>
         <div className="max-w-xl">
-          <p className="eyebrow text-white/60">Method Factory · Área restrita</p>
+          <p className="eyebrow text-muted-foreground">Method Factory · Área restrita</p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">Revisão humana</h1>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             Entre com sua conta Supabase. O acesso à caixa de entrada também depende de um operador
             ativo específico da Factory.
           </p>
           <form
             onSubmit={(event) => void signIn(event)}
-            className="mt-8 space-y-5 border border-white/20 p-5 sm:p-7"
+            className="mt-8 space-y-5 border border-foreground/25 p-5 sm:p-7"
           >
             <div className="space-y-2">
               <Label htmlFor="factory-email">E-mail</Label>
@@ -462,7 +462,7 @@ export function FactoryReview() {
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="h-12 border-white/25 bg-white/[0.025]"
+                className="h-12 border-foreground/25 bg-white"
               />
             </div>
             <div className="space-y-2">
@@ -474,16 +474,16 @@ export function FactoryReview() {
                 required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="h-12 border-white/25 bg-white/[0.025]"
+                className="h-12 border-foreground/25 bg-white"
               />
             </div>
             {authError ? (
-              <p role="alert" className="text-sm text-white">
+              <p role="alert" className="text-sm text-foreground">
                 {authError}
               </p>
             ) : null}
             {recoveryNotice ? (
-              <p role="status" className="text-sm leading-relaxed text-white/75">
+              <p role="status" className="text-sm leading-relaxed text-muted-foreground">
                 {recoveryNotice}
               </p>
             ) : null}
@@ -513,13 +513,13 @@ export function FactoryReview() {
     return (
       <PanelShell>
         <div className="max-w-xl">
-          <p className="eyebrow text-white/60">Method Factory · Área restrita</p>
+          <p className="eyebrow text-muted-foreground">Method Factory · Área restrita</p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">
             {currentOperatorAccess === "checking"
               ? "Verificando autorização"
               : "Acesso indisponível"}
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-white/70" role="status">
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground" role="status">
             {currentOperatorAccess === "checking"
               ? "Aguarde enquanto verificamos se a conta tem acesso ativo à Factory."
               : "Esta conta não tem acesso ativo à área de revisão."}
@@ -541,13 +541,13 @@ export function FactoryReview() {
 
   return (
     <PanelShell>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/20 pb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-foreground/25 pb-6">
         <div>
-          <p className="eyebrow text-white/60">Method Factory · Operação interna</p>
+          <p className="eyebrow text-muted-foreground">Method Factory · Operação interna</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
             Caixa de revisão
           </h1>
-          <p className="mt-3 text-sm text-white/65">
+          <p className="mt-3 text-sm text-muted-foreground">
             Sessão autenticada · {session.user.email ?? "operador"}
           </p>
         </div>
@@ -559,17 +559,20 @@ export function FactoryReview() {
       {notice ? (
         <p
           role="status"
-          className="mt-6 border border-white/30 bg-white/5 p-4 text-sm leading-relaxed"
+          className="mt-6 border border-foreground/25 bg-white/60 p-4 text-sm leading-relaxed"
         >
           {notice}
         </p>
       ) : null}
 
-      <section className="mt-8 border border-white/20 p-5 sm:p-6" aria-labelledby="invite-title">
+      <section
+        className="mt-8 border border-foreground/25 p-5 sm:p-6"
+        aria-labelledby="invite-title"
+      >
         <h2 id="invite-title" className="text-xl font-medium">
           Criar convite
         </h2>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/65">
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
           O link contém um token de uso único no fragmento da URL. Compartilhe-o por um canal
           apropriado. O link não pode ser recuperado depois desta sessão.
         </p>
@@ -585,19 +588,19 @@ export function FactoryReview() {
               maxLength={200}
               value={inviteName}
               onChange={(event) => setInviteName(event.target.value)}
-              className="h-12 border-white/25 bg-white/[0.025]"
+              className="h-12 border-foreground/25 bg-white"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="invite-industry">
-              Setor <span className="font-normal text-white/55">· opcional</span>
+              Setor <span className="font-normal text-muted-foreground">· opcional</span>
             </Label>
             <Input
               id="invite-industry"
               maxLength={200}
               value={industry}
               onChange={(event) => setIndustry(event.target.value)}
-              className="h-12 border-white/25 bg-white/[0.025]"
+              className="h-12 border-foreground/25 bg-white"
             />
           </div>
           <div className="space-y-2">
@@ -606,7 +609,7 @@ export function FactoryReview() {
               id="invite-relationship"
               value={relationshipType}
               onChange={(event) => setRelationshipType(event.target.value as RelationshipType)}
-              className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base"
+              className="h-12 w-full border border-foreground/25 bg-white px-3 text-base"
             >
               <option value="internal">Iniciativa interna</option>
               <option value="related_company">Empresa relacionada</option>
@@ -620,7 +623,7 @@ export function FactoryReview() {
               id="invite-expiration"
               value={expiresInDays}
               onChange={(event) => setExpiresInDays(Number(event.target.value))}
-              className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base"
+              className="h-12 w-full border border-foreground/25 bg-white px-3 text-base"
             >
               {Array.from({ length: 30 }, (_, index) => index + 1).map((days) => (
                 <option key={days} value={days}>
@@ -638,11 +641,11 @@ export function FactoryReview() {
         {invites.length > 0 ? (
           <div className="mt-6 space-y-4">
             {invites.map((invite) => (
-              <div key={invite.id} className="border border-white/15 p-4 sm:p-5">
+              <div key={invite.id} className="border border-border p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h3 className="font-medium">{invite.name}</h3>
-                    <p className="mt-1 text-xs text-white/60">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Expira em {formatDate(invite.expiresAt)} · ID mantido somente nesta sessão
                     </p>
                   </div>
@@ -661,7 +664,7 @@ export function FactoryReview() {
                     readOnly
                     aria-label={`Link do convite para ${invite.name}`}
                     value={invite.link}
-                    className="h-11 min-w-0 border-white/25 bg-white/[0.025] font-mono text-xs"
+                    className="h-11 min-w-0 border-foreground/25 bg-white font-mono text-xs"
                   />
                   <Button
                     type="button"
@@ -673,7 +676,7 @@ export function FactoryReview() {
                   </Button>
                 </div>
                 {invite.revoked ? (
-                  <p className="mt-2 text-xs text-white/65">Este link foi revogado.</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Este link foi revogado.</p>
                 ) : null}
               </div>
             ))}
@@ -683,12 +686,12 @@ export function FactoryReview() {
 
       <div className="mt-10 grid gap-8 xl:grid-cols-[minmax(16rem,0.7fr)_minmax(0,1.6fr)]">
         <section aria-labelledby="inbox-title">
-          <div className="flex items-center justify-between gap-3 border-b border-white/20 pb-4">
+          <div className="flex items-center justify-between gap-3 border-b border-foreground/25 pb-4">
             <div>
               <h2 id="inbox-title" className="text-xl font-medium">
                 Briefings
               </h2>
-              <p className="mt-1 text-xs text-white/60">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {inbox.length} item(ns) · limite retornada pela caixa
               </p>
             </div>
@@ -704,15 +707,15 @@ export function FactoryReview() {
             </Button>
           </div>
           {inboxBusy ? (
-            <p role="status" className="py-6 text-sm text-white/65">
+            <p role="status" className="py-6 text-sm text-muted-foreground">
               Carregando caixa de entrada…
             </p>
           ) : inbox.length === 0 ? (
-            <p className="py-6 text-sm leading-relaxed text-white/65">
+            <p className="py-6 text-sm leading-relaxed text-muted-foreground">
               Nenhum briefing disponível nesta caixa ou o acesso não está configurado.
             </p>
           ) : (
-            <ul className="divide-y divide-white/15">
+            <ul className="divide-y divide-border">
               {inbox.map((item) => (
                 <li key={item.id}>
                   <button
@@ -722,17 +725,19 @@ export function FactoryReview() {
                       setSelectedId(item.id);
                       setNotice("");
                     }}
-                    className={`w-full px-3 py-4 text-left transition-colors hover:bg-white/5 ${selectedId === item.id ? "border-l-2 border-white bg-white/10" : "border-l-2 border-transparent"}`}
+                    className={`w-full px-3 py-4 text-left transition-colors hover:bg-black/5 ${selectedId === item.id ? "border-l-2 border-foreground bg-black/5" : "border-l-2 border-transparent"}`}
                   >
                     <span className="block font-medium">{item.company}</span>
-                    <span className="mt-1 block text-xs text-white/60">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       {RELATIONSHIP_LABELS[item.relationshipType] ?? "Relacionamento informado"} ·{" "}
                       {STATUS_LABELS[item.status] ?? item.status}
                     </span>
                     {item.industry ? (
-                      <span className="mt-1 block text-xs text-white/55">{item.industry}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        {item.industry}
+                      </span>
                     ) : null}
-                    <span className="mt-2 block text-xs text-white/65">
+                    <span className="mt-2 block text-xs text-muted-foreground">
                       {item.pains.length} dor(es) · {formatDate(item.submittedAt)}
                     </span>
                   </button>
@@ -744,7 +749,7 @@ export function FactoryReview() {
 
         <section className="min-w-0" aria-labelledby="review-title">
           {reviewBusy ? (
-            <p role="status" className="py-8 text-sm text-white/65">
+            <p role="status" className="py-8 text-sm text-muted-foreground">
               Carregando briefing…
             </p>
           ) : review && selectedBrief ? (
@@ -757,7 +762,7 @@ export function FactoryReview() {
               onStatus={(status) => void updateStatus(status)}
             />
           ) : (
-            <div className="border border-dashed border-white/20 p-8 text-sm leading-relaxed text-white/60">
+            <div className="border border-dashed border-foreground/25 p-8 text-sm leading-relaxed text-muted-foreground">
               Selecione um briefing para abrir os dados de revisão. A empresa relacionada é
               identificada como tal; isso não constitui validação independente.
             </div>
@@ -804,31 +809,31 @@ function ReviewPanel({
 
   return (
     <div className="space-y-7">
-      <header className="border-b border-white/20 pb-5">
-        <p className="eyebrow text-white/60">Briefing recebido · revisão interna</p>
+      <header className="border-b border-foreground/25 pb-5">
+        <p className="eyebrow text-muted-foreground">Briefing recebido · revisão interna</p>
         <h2 id="review-title" className="mt-3 break-words text-2xl font-semibold tracking-tight">
           {brief.company}
         </h2>
-        <p className="mt-2 text-sm text-white/70">
+        <p className="mt-2 text-sm text-muted-foreground">
           {RELATIONSHIP_LABELS[brief.relationshipType] ?? "Relacionamento informado"}
           {brief.industry ? ` · ${brief.industry}` : ""}
         </p>
-        <p className="mt-2 text-xs text-white/55">
+        <p className="mt-2 text-xs text-muted-foreground">
           Empresa relacionada, quando aplicável, conforme cadastro do convite — não é validação
           independente.
         </p>
-        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-wider text-white/60">
+        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
           <span>Status: {STATUS_LABELS[review.status] ?? review.status}</span>
           <span>Enviado: {formatDate(review.submittedAt)}</span>
           <span>ID: {review.id}</span>
         </div>
       </header>
 
-      <section className="border border-white/15 p-5" aria-labelledby="reported-title">
+      <section className="border border-border p-5" aria-labelledby="reported-title">
         <h3 id="reported-title" className="text-lg font-medium">
           Relato informado
         </h3>
-        <p className="mt-2 text-xs leading-relaxed text-white/60">
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Relato fornecido no briefing; não verificado independentemente.
         </p>
         <dl className="mt-5 space-y-4">
@@ -836,7 +841,7 @@ function ReviewPanel({
             .filter((field) => field.kind !== "problem-list" && values[field.id])
             .map((field) => (
               <div key={field.id}>
-                <dt className="text-xs text-white/55">{field.label}</dt>
+                <dt className="text-xs text-muted-foreground">{field.label}</dt>
                 <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
                   {values[field.id]}
                 </dd>
@@ -845,15 +850,15 @@ function ReviewPanel({
         </dl>
       </section>
 
-      <section className="border border-white/15 p-5" aria-labelledby="pains-title">
+      <section className="border border-border p-5" aria-labelledby="pains-title">
         <h3 id="pains-title" className="text-lg font-medium">
           Pontos de dor
         </h3>
         <ol className="mt-4 space-y-4">
           {review.pains.map((pain, index) => (
-            <li key={String(pain["id"] ?? index)} className="border-l border-white/35 pl-4">
+            <li key={String(pain["id"] ?? index)} className="border-l border-foreground/25 pl-4">
               <h4 className="font-medium">{String(pain["title"] ?? `Dor ${index + 1}`)}</h4>
-              <p className="mt-1 text-xs text-white/65">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {String(pain["domain"] ?? "Área não informada")} · Prioridade percebida:{" "}
                 {String(pain["urgency"] ?? "Não informada")}
               </p>
@@ -861,7 +866,7 @@ function ReviewPanel({
                 {String(pain["description"] ?? "")}
               </p>
               {pain["impact"] ? (
-                <p className="mt-2 text-sm leading-relaxed text-white/65">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Impacto informado: {String(pain["impact"])}
                 </p>
               ) : null}
@@ -877,19 +882,19 @@ function ReviewPanel({
           inputDigest={review.inputDigest}
         />
       ) : (
-        <section className="border border-white/15 p-5">
+        <section className="border border-border p-5">
           <h3 className="text-lg font-medium">Análise e rascunho</h3>
-          <p className="mt-2 text-sm leading-relaxed text-white/65">
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Nenhum resultado de análise está disponível neste briefing.
           </p>
         </section>
       )}
 
-      <section className="border border-white/20 p-5" aria-labelledby="actions-title">
+      <section className="border border-foreground/25 p-5" aria-labelledby="actions-title">
         <h3 id="actions-title" className="text-lg font-medium">
           Ações explícitas de revisão
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-white/65">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Registre o briefing como “em revisão” antes de aprovar. Cada ação altera o estado
           registrado; nenhuma envia e-mail ou executa planos externos.
         </p>
@@ -913,7 +918,7 @@ function ReviewPanel({
           ))}
         </div>
         <p
-          className="mt-5 border-t border-white/15 pt-5 text-sm leading-relaxed text-white/70"
+          className="mt-5 border-t border-border pt-5 text-sm leading-relaxed text-muted-foreground"
           role="status"
         >
           Aprovação bloqueada: rules-v1 é apenas um rascunho determinístico, não uma pesquisa GKI
@@ -942,36 +947,36 @@ function AnalysisPanel({
   const method = methodDraft;
 
   return (
-    <section className="space-y-5 border border-white/20 p-5" aria-labelledby="analysis-title">
+    <section className="space-y-5 border border-foreground/25 p-5" aria-labelledby="analysis-title">
       <div>
-        <p className="eyebrow text-white/60">Saída de triagem · não é decisão automática</p>
+        <p className="eyebrow text-muted-foreground">Saída de triagem · não é decisão automática</p>
         <h3 id="analysis-title" className="mt-2 text-lg font-medium">
           Rascunho determinístico
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-white/70">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Motor de regras explícitas (rules-v1), usando os dados informados e metadados. Não é
           resposta ou recomendação automática para a empresa; requer revisão humana.
         </p>
         <dl className="mt-4 grid gap-3 text-xs sm:grid-cols-2">
           <div>
-            <dt className="text-white/55">Motor</dt>
+            <dt className="text-muted-foreground">Motor</dt>
             <dd className="mt-1 font-mono">{String(analysis["engine"] ?? "rules-v1")}</dd>
           </div>
           <div>
-            <dt className="text-white/55">Versão</dt>
+            <dt className="text-muted-foreground">Versão</dt>
             <dd className="mt-1 font-mono">{String(analysis["version"] ?? "Não informada")}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-white/55">Estado</dt>
+            <dt className="text-muted-foreground">Estado</dt>
             <dd className="mt-1">
               {String(analysis["status"] ?? "Rascunho; revisar antes de qualquer uso")}
             </dd>
           </div>
           {inputDigest ? (
             <div className="sm:col-span-2">
-              <dt className="text-white/55">Digest dos insumos (SHA-256)</dt>
+              <dt className="text-muted-foreground">Digest dos insumos (SHA-256)</dt>
               <dd className="mt-1 break-all font-mono text-[10px]">{inputDigest}</dd>
-              <dd className="mt-1 text-[10px] text-white/50">
+              <dd className="mt-1 text-[10px] text-muted-foreground">
                 Identificador de integridade da versão rules-v1, briefing, dores e metadados usados;
                 não contém os dados em claro.
               </dd>
@@ -981,12 +986,12 @@ function AnalysisPanel({
       </div>
 
       {factualSummary ? (
-        <div className="border-t border-white/15 pt-4">
+        <div className="border-t border-border pt-4">
           <h4 className="font-medium">Resumo factual informado</h4>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
             {String(factualSummary["texto"] ?? "")}
           </p>
-          <p className="mt-2 text-xs text-white/55">
+          <p className="mt-2 text-xs text-muted-foreground">
             {String(
               factualSummary["atribuição"] ?? "Atribuído ao briefing; sem verificação independente",
             )}
@@ -995,15 +1000,18 @@ function AnalysisPanel({
       ) : null}
 
       {hypotheses.length > 0 ? (
-        <div className="border-t border-white/15 pt-4">
+        <div className="border-t border-border pt-4">
           <h4 className="font-medium">Hipóteses — requerem teste, não são fatos</h4>
           <ul className="mt-3 space-y-3">
             {hypotheses.map((item, index) => {
               const hypothesis = asRecord(item);
               return (
-                <li key={index} className="border-l border-white/35 pl-3 text-sm leading-relaxed">
+                <li
+                  key={index}
+                  className="border-l border-foreground/25 pl-3 text-sm leading-relaxed"
+                >
                   <p>{String(hypothesis?.["texto"] ?? "")}</p>
-                  <p className="mt-1 text-xs text-white/60">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {String(hypothesis?.["marca"] ?? "Hipótese; validar com revisão humana")} · Dor
                     relacionada: {String(hypothesis?.["dor_relacionada"] ?? "Não especificada")}
                   </p>
@@ -1015,12 +1023,12 @@ function AnalysisPanel({
       ) : null}
 
       {method ? (
-        <div className="border-t border-white/15 pt-4">
+        <div className="border-t border-border pt-4">
           <h4 className="font-medium">Método em rascunho</h4>
           <p className="mt-2 text-sm font-medium">
             {String(method["objetivo"] ?? "Objetivo ainda não especificado")}
           </p>
-          <p className="mt-2 text-xs text-white/60">
+          <p className="mt-2 text-xs text-muted-foreground">
             {String(method["status"] ?? "Rascunho interno — não aprovado nem validado")}
           </p>
           <StructuredList title="Premissas" items={method["premissas"]} />
@@ -1049,25 +1057,25 @@ function AnalysisPanel({
         />
       ) : null}
       {relatedSources.length > 0 ? (
-        <div className="border-t border-white/15 pt-4">
+        <div className="border-t border-border pt-4">
           <h4 className="font-medium">Fontes relacionadas por metadados</h4>
-          <p className="mt-1 text-xs leading-relaxed text-white/60">
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Estas referências não foram consultadas como conteúdo nem usadas como evidência do caso.
           </p>
           <ul className="mt-3 space-y-3">
             {relatedSources.map((item, index) => {
               const source = asRecord(item);
               return (
-                <li key={index} className="border border-white/10 p-3 text-sm">
+                <li key={index} className="border border-border p-3 text-sm">
                   <p className="font-medium">{String(source?.["título"] ?? "Fonte sem título")}</p>
-                  <p className="mt-1 break-words text-xs text-white/60">
+                  <p className="mt-1 break-words text-xs text-muted-foreground">
                     {String(source?.["url_canônica"] ?? "")}
                   </p>
-                  <p className="mt-1 text-xs text-white/70">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {String(source?.["classificação"] ?? "Referência de metadados")} · Direitos:{" "}
                     {String(source?.["status_de_direitos"] ?? "não informado")}
                   </p>
-                  <p className="mt-1 text-xs leading-relaxed text-white/55">
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {String(
                       source?.["nota"] ??
                         "Correspondência de metadados, não validação independente.",
@@ -1098,23 +1106,23 @@ function StructuredList({
   const entries = asArray(items);
   if (!entries.length) return null;
   return (
-    <div className="mt-4 border-t border-white/15 pt-4">
+    <div className="mt-4 border-t border-border pt-4">
       <h5 className="text-sm font-medium">{title}</h5>
-      <ul className="mt-2 space-y-2 text-sm leading-relaxed text-white/75">
+      <ul className="mt-2 space-y-2 text-sm leading-relaxed text-muted-foreground">
         {entries.map((item, index) => {
           const record = asRecord(item);
           if (!record)
             return (
-              <li key={index} className="border-l border-white/25 pl-3">
+              <li key={index} className="border-l border-foreground/25 pl-3">
                 {String(item)}
               </li>
             );
           return (
-            <li key={index} className="border-l border-white/25 pl-3">
+            <li key={index} className="border-l border-foreground/25 pl-3">
               {objectFields.map((field) =>
                 record[field] === undefined ? null : (
                   <p key={field}>
-                    <span className="text-white/55">{field.replaceAll("_", " ")}: </span>
+                    <span className="text-muted-foreground">{field.replaceAll("_", " ")}: </span>
                     {Array.isArray(record[field])
                       ? record[field].map(String).join(" · ")
                       : String(record[field])}

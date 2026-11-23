@@ -107,20 +107,20 @@ export function FactoryPasswordReset() {
 
   return (
     <section className="mx-auto max-w-xl px-5 py-12 sm:px-8">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/60">
+      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
         Method Factory · recuperação de acesso
       </p>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">Redefinir senha</h1>
 
       {state === "checking" ? (
-        <p role="status" className="mt-4 text-sm text-white/70">
+        <p role="status" className="mt-4 text-sm text-muted-foreground">
           Validando o link de recuperação…
         </p>
       ) : null}
 
       {state === "invalid" ? (
         <div className="mt-5 space-y-4">
-          <p role="alert" className="text-sm leading-relaxed text-white/75">
+          <p role="alert" className="text-sm leading-relaxed text-muted-foreground">
             Este link é inválido, expirou ou já foi usado. Volte à tela de login e solicite um novo.
           </p>
           <Button asChild variant="outline" className="min-h-11">
@@ -131,7 +131,7 @@ export function FactoryPasswordReset() {
 
       {state === "ready" ? (
         <>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             Escolha uma nova senha para sua conta Supabase.
           </p>
           <form onSubmit={(event) => void updatePassword(event)} className="mt-7 space-y-5">
@@ -145,7 +145,7 @@ export function FactoryPasswordReset() {
                 required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="h-12 border-white/25 bg-white/[0.025]"
+                className="h-12 border-foreground/25 bg-white"
               />
             </div>
             <div className="space-y-2">
@@ -158,11 +158,11 @@ export function FactoryPasswordReset() {
                 required
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
-                className="h-12 border-white/25 bg-white/[0.025]"
+                className="h-12 border-foreground/25 bg-white"
               />
             </div>
             {error ? (
-              <p role="alert" className="text-sm text-white">
+              <p role="alert" className="text-sm text-foreground">
                 {error}
               </p>
             ) : null}
@@ -175,7 +175,7 @@ export function FactoryPasswordReset() {
 
       {state === "complete" ? (
         <div className="mt-5 space-y-4">
-          <p role="status" className="text-sm leading-relaxed text-white/75">
+          <p role="status" className="text-sm leading-relaxed text-muted-foreground">
             {notice}
           </p>
           <Button asChild variant="outline" className="min-h-11">

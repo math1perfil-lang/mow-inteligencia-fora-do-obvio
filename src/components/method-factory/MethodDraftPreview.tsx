@@ -64,99 +64,6 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
         </ul>
       </section>
 
-      <section className="glass p-5 sm:p-6" aria-labelledby="draft-knowledge-plan">
-        <h4 id="draft-knowledge-plan" className="text-lg font-medium">
-          Plano interno de áreas e materiais
-        </h4>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Seleção orientadora para futuras buscas, visível à equipe interna MOW. Nenhuma fonte real
-          foi consultada, nenhum conteúdo foi processado ou salvo, e esta seleção não libera uso de
-          material.
-        </p>
-        <p className="mt-3 text-xs text-muted-foreground">{knowledge.status}</p>
-
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          <div>
-            <h5 className="text-sm font-medium">Áreas candidatas</h5>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {knowledge.candidateAreas.join("; ") || "Nenhuma área candidata"}
-            </p>
-          </div>
-          <div>
-            <h5 className="text-sm font-medium">Trilhas condicionais — confirmar no briefing</h5>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {knowledge.conditionalAreas.join("; ") || "Nenhuma trilha condicional"}
-            </p>
-          </div>
-          {knowledge.proposedCrosscuttingAreas.length > 0 ? (
-            <div className="sm:col-span-2">
-              <h5 className="text-sm font-medium">Extensão taxonômica proposta, não cadastrada</h5>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {knowledge.proposedCrosscuttingAreas.join("; ")}
-              </p>
-            </div>
-          ) : null}
-        </div>
-
-        {knowledge.needsClarification.length > 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            Esclarecer antes de ampliar a seleção: {knowledge.needsClarification.join("; ")}.
-          </p>
-        ) : null}
-
-        {knowledge.mappings.length > 0 ? (
-          <ul className="mt-5 space-y-4 border-t border-border pt-4">
-            {knowledge.mappings.map((mapping, index) => (
-              <li key={`${mapping.problemDomain}-${index}`}>
-                <p className="text-sm font-medium">{mapping.problemDomain}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Candidatas: {mapping.candidateAreas.join("; ")}
-                  {mapping.conditionalAreas.length > 0
-                    ? ` · Condicionais: ${mapping.conditionalAreas.join("; ")}`
-                    : ""}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {mapping.rationale}
-                </p>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        <div className="mt-5 grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
-          <div>
-            <h5 className="text-sm font-medium">Evidência principal</h5>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              {knowledge.materialPriority.primaryEvidence.join("; ")}
-            </p>
-          </div>
-          <div>
-            <h5 className="text-sm font-medium">Desenho metodológico — filtro forte</h5>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              {knowledge.materialPriority.methodDesignRequiresValidation.join("; ")}
-            </p>
-          </div>
-          <div>
-            <h5 className="text-sm font-medium">Apoio provisório</h5>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              {knowledge.materialPriority.contextualAndProvisional.join("; ")}
-            </p>
-          </div>
-          <div>
-            <h5 className="text-sm font-medium">Descoberta — não prova de eficácia</h5>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              {knowledge.materialPriority.discoveryOnly.join("; ")}
-            </p>
-          </div>
-        </div>
-
-        <ul className="mt-5 list-disc space-y-2 border-t border-border pt-4 pl-5 text-xs leading-relaxed text-muted-foreground">
-          {knowledge.safeguards.map((safeguard) => (
-            <li key={safeguard}>{safeguard}</li>
-          ))}
-        </ul>
-      </section>
-
       <section className="glass p-5 sm:p-6" aria-labelledby="draft-steps">
         <h4 id="draft-steps" className="text-lg font-medium">
           Rascunho de método
@@ -238,6 +145,105 @@ export function MethodDraftPreview({ draft }: { draft: MethodDraft }) {
             Fontes relacionadas recebidas nesta simulação: {draft.fontes_relacionadas.length}.
             Nenhum conteúdo de referência foi consultado.
           </p>
+          <section
+            className="mt-6 space-y-4 border-t border-border pt-4"
+            aria-labelledby="draft-knowledge-plan"
+          >
+            <h4 id="draft-knowledge-plan" className="text-base font-medium">
+              Plano interno de áreas e materiais
+            </h4>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Seleção orientadora para futuras buscas, visível à equipe interna MOW. Nenhuma fonte
+              real foi consultada, nenhum conteúdo foi processado ou salvo, e esta seleção não
+              libera uso de material.
+            </p>
+            <p className="mt-3 text-xs text-muted-foreground">{knowledge.status}</p>
+
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <div>
+                <h5 className="text-sm font-medium">Áreas candidatas</h5>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {knowledge.candidateAreas.join("; ") || "Nenhuma área candidata"}
+                </p>
+              </div>
+              <div>
+                <h5 className="text-sm font-medium">
+                  Trilhas condicionais — confirmar no briefing
+                </h5>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {knowledge.conditionalAreas.join("; ") || "Nenhuma trilha condicional"}
+                </p>
+              </div>
+              {knowledge.proposedCrosscuttingAreas.length > 0 ? (
+                <div className="sm:col-span-2">
+                  <h5 className="text-sm font-medium">
+                    Extensão taxonômica proposta, não cadastrada
+                  </h5>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {knowledge.proposedCrosscuttingAreas.join("; ")}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+
+            {knowledge.needsClarification.length > 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Esclarecer antes de ampliar a seleção: {knowledge.needsClarification.join("; ")}.
+              </p>
+            ) : null}
+
+            {knowledge.mappings.length > 0 ? (
+              <ul className="mt-5 space-y-4 border-t border-border pt-4">
+                {knowledge.mappings.map((mapping, index) => (
+                  <li key={`${mapping.problemDomain}-${index}`}>
+                    <p className="text-sm font-medium">{mapping.problemDomain}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Candidatas: {mapping.candidateAreas.join("; ")}
+                      {mapping.conditionalAreas.length > 0
+                        ? ` · Condicionais: ${mapping.conditionalAreas.join("; ")}`
+                        : ""}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {mapping.rationale}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            <div className="mt-5 grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
+              <div>
+                <h5 className="text-sm font-medium">Evidência principal</h5>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {knowledge.materialPriority.primaryEvidence.join("; ")}
+                </p>
+              </div>
+              <div>
+                <h5 className="text-sm font-medium">Desenho metodológico — filtro forte</h5>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {knowledge.materialPriority.methodDesignRequiresValidation.join("; ")}
+                </p>
+              </div>
+              <div>
+                <h5 className="text-sm font-medium">Apoio provisório</h5>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {knowledge.materialPriority.contextualAndProvisional.join("; ")}
+                </p>
+              </div>
+              <div>
+                <h5 className="text-sm font-medium">Descoberta — não prova de eficácia</h5>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {knowledge.materialPriority.discoveryOnly.join("; ")}
+                </p>
+              </div>
+            </div>
+
+            <ul className="mt-5 list-disc space-y-2 border-t border-border pt-4 pl-5 text-xs leading-relaxed text-muted-foreground">
+              {knowledge.safeguards.map((safeguard) => (
+                <li key={safeguard}>{safeguard}</li>
+              ))}
+            </ul>
+          </section>
           <ul className="list-disc space-y-2 pl-5">
             {draft.limitações.map((limitation) => (
               <li key={limitation}>{limitation}</li>

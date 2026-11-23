@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, Outlet, createFileRoute, useRouterState } from "@tanstack/react-router";
 import { ArrowUpRight, FlaskConical } from "lucide-react";
 import { checkFactoryOperatorAccess } from "@/lib/method-factory/workflow.functions";
-import { useOpenAlexOwnerAccess } from "@/lib/mow-gki/use-openalex-owner-access";
 
 export const Route = createFileRoute("/method-factory")({
   head: () => ({
@@ -17,7 +16,6 @@ export const Route = createFileRoute("/method-factory")({
 
 export function FactoryLayout() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const isPreview = pathname.endsWith("/brief-preview");
   const isOpenAlex = pathname === "/method-factory/openalex";
   const isClientIntake = pathname === "/method-factory/intake";
   const isPublicFactoryPath =
@@ -63,23 +61,7 @@ export function FactoryLayout() {
   }
 
   const operatorGateStatus = operatorGate.pathname === pathname ? operatorGate.status : "checking";
-  if (requiresOperator && operatorGateStatus !== "allowed") {
-    return (
-      <div className="mf-root relative min-h-screen overflow-hidden bg-background text-foreground">
-        <main className="mx-auto max-w-2xl px-5 py-16 sm:px-8" aria-live="polite">
-          <p className="eyebrow text-muted-foreground">Method Factory</p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-            {operatorGateStatus === "checking" ? "Verificando acesso" : "Área indisponível"}
-          </h1>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            {operatorGateStatus === "checking"
-              ? "Aguarde enquanto verificamos a autorização desta página."
-              : "Esta página não está disponível por este link."}
-          </p>
-        </main>
-      </div>
-    );
-  }
+  const isGateVisible = requiresOperator && operatorGateStatus !== "allowed";
 
   return (
     <div
@@ -129,10 +111,6 @@ export function FactoryLayout() {
             <Link to="/method-factory/brief-preview" activeProps={{ className: "is-current" }}>
               Briefing <ArrowUpRight className="ml-1 inline size-3.5" aria-hidden="true" />
             </Link>
-            <Link to="/method-factory/review" activeProps={{ className: "is-current" }}>
-              Revisão interna
-            </Link>
-            <OpenAlexOwnerLink />
           </nav>
         </div>
       </header>
@@ -140,19 +118,19 @@ export function FactoryLayout() {
         <div className="mf-rise glass flex items-start gap-3.5 px-5 py-3.5 text-[15px] leading-relaxed text-muted-foreground">
           <FlaskConical className="mt-0.5 size-5 shrink-0 text-[#3a3fb8]" aria-hidden="true" />
           <p>
-            {isPreview ? (
-              <>
-                <strong className="font-semibold text-foreground">
-                  Protótipo sem persistência.
-                </strong>{" "}
-                Use somente dados fictícios. As respostas ficam na memória desta página; não são
-                enviadas nem salvas.
-              </>
-            ) : (
+            {isOpenAlex ? (
               <>
                 <strong className="font-semibold text-foreground">Área interna da Factory.</strong>{" "}
                 Revisão e OpenAlex exigem autorização verificada no servidor. A busca aceita somente
                 termos temáticos curtos e retorna metadados bibliográficos temporários.
+              </>
+            ) : (
+              <>
+                <strong className="font-semibold text-foreground">
+                  Protótipo sem persistência.
+                </strong>{" "}
+                Use apenas dados fictícios. As respostas ficam somente na memória desta página: não
+                são enviadas, salvas nem analisadas por IA. Recarregar ou sair apaga tudo.
               </>
             )}
           </p>
@@ -162,7 +140,39 @@ export function FactoryLayout() {
         id="factory-content"
         className={`relative z-10 ${isOpenAlex ? "bg-[#101010] text-white" : ""}`}
       >
-        <Outlet />
+        {isGateVisible ? (
+          <section className="mx-auto max-w-7xl px-5 pt-12 sm:px-8 sm:pt-20" aria-live="polite">
+            <div className="glass max-w-2xl p-6 sm:p-8">
+              <p className="mf-pill">
+                <span className="mf-dot" aria-hidden="true" />
+                Área interna
+              </p>
+              <h1
+                className={`mt-6 text-3xl font-light tracking-tight sm:text-4xl ${isOpenAlex ? "text-white" : "text-foreground"}`}
+              >
+                {operatorGateStatus === "checking" ? "Verificando acesso" : "Acesso restrito"}
+              </h1>
+              <p
+                className={`mt-4 text-sm leading-relaxed ${isOpenAlex ? "text-white/70" : "text-muted-foreground"}`}
+              >
+                {operatorGateStatus === "checking"
+                  ? "Aguarde enquanto verificamos a autorização desta página."
+                  : "Esta área é exclusiva para operadoras ativas. Entre pela revisão interna com a conta autorizada do projeto Mow Group e tente novamente."}
+              </p>
+              {operatorGateStatus === "denied" ? (
+                <Link
+                  to="/method-factory/review"
+                  className={`mt-6 inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-medium transition-opacity hover:opacity-85 ${isOpenAlex ? "bg-white text-black" : "bg-foreground text-background"}`}
+                >
+                  Abrir autenticação interna
+                  <ArrowUpRight className="size-4" aria-hidden="true" />
+                </Link>
+              ) : null}
+            </div>
+          </section>
+        ) : (
+          <Outlet />
+        )}
       </main>
       <footer className="relative z-10 mt-16 border-t border-border px-5 py-6 sm:px-8">
         <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
@@ -171,16 +181,5 @@ export function FactoryLayout() {
         </div>
       </footer>
     </div>
-  );
-}
-
-function OpenAlexOwnerLink() {
-  const access = useOpenAlexOwnerAccess();
-  if (access.status !== "allowed") return null;
-
-  return (
-    <Link to="/method-factory/openalex" activeProps={{ className: "is-current" }}>
-      OpenAlex
-    </Link>
   );
 }

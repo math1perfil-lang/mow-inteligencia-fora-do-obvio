@@ -21,6 +21,7 @@ import { Route as MethodFactoryIntakeRouteImport } from './routes/method-factory
 import { Route as MethodFactoryOpenalexRouteImport } from './routes/method-factory.openalex'
 import { Route as MethodFactoryResetPasswordRouteImport } from './routes/method-factory.reset-password'
 import { Route as MethodFactoryReviewRouteImport } from './routes/method-factory.review'
+import { Route as MethodFactoryWorkspaceRouteImport } from './routes/method-factory.workspace'
 import { Route as AdminEntrevistasIndexRouteImport } from './routes/admin/entrevistas.index'
 import { Route as AdminEntrevistasIdRouteImport } from './routes/admin/entrevistas.$id'
 
@@ -86,6 +87,11 @@ const MethodFactoryReviewRoute = MethodFactoryReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => MethodFactoryRoute,
 } as any)
+const MethodFactoryWorkspaceRoute = MethodFactoryWorkspaceRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
+  getParentRoute: () => MethodFactoryRoute,
+} as any)
 const AdminEntrevistasIndexRoute = AdminEntrevistasIndexRouteImport.update({
   id: '/entrevistas/',
   path: '/entrevistas/',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/method-factory/openalex': typeof MethodFactoryOpenalexRoute
   '/method-factory/reset-password': typeof MethodFactoryResetPasswordRoute
   '/method-factory/review': typeof MethodFactoryReviewRoute
+  '/method-factory/workspace': typeof MethodFactoryWorkspaceRoute
   '/admin/': typeof AdminIndexRoute
   '/method-factory/': typeof MethodFactoryIndexRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/method-factory/openalex': typeof MethodFactoryOpenalexRoute
   '/method-factory/reset-password': typeof MethodFactoryResetPasswordRoute
   '/method-factory/review': typeof MethodFactoryReviewRoute
+  '/method-factory/workspace': typeof MethodFactoryWorkspaceRoute
   '/admin': typeof AdminIndexRoute
   '/method-factory': typeof MethodFactoryIndexRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/method-factory/openalex': typeof MethodFactoryOpenalexRoute
   '/method-factory/reset-password': typeof MethodFactoryResetPasswordRoute
   '/method-factory/review': typeof MethodFactoryReviewRoute
+  '/method-factory/workspace': typeof MethodFactoryWorkspaceRoute
   '/admin/': typeof AdminIndexRoute
   '/method-factory/': typeof MethodFactoryIndexRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/method-factory/openalex'
     | '/method-factory/reset-password'
     | '/method-factory/review'
+    | '/method-factory/workspace'
     | '/admin/'
     | '/method-factory/'
     | '/admin/entrevistas/$id'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/method-factory/openalex'
     | '/method-factory/reset-password'
     | '/method-factory/review'
+    | '/method-factory/workspace'
     | '/admin'
     | '/method-factory'
     | '/admin/entrevistas/$id'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/method-factory/openalex'
     | '/method-factory/reset-password'
     | '/method-factory/review'
+    | '/method-factory/workspace'
     | '/admin/'
     | '/method-factory/'
     | '/admin/entrevistas/$id'
@@ -285,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MethodFactoryReviewRouteImport
       parentRoute: typeof MethodFactoryRoute
     }
+    '/method-factory/workspace': {
+      id: '/method-factory/workspace'
+      path: '/workspace'
+      fullPath: '/method-factory/workspace'
+      preLoaderRoute: typeof MethodFactoryWorkspaceRouteImport
+      parentRoute: typeof MethodFactoryRoute
+    }
     '/admin/entrevistas/': {
       id: '/admin/entrevistas/'
       path: '/entrevistas'
@@ -326,6 +345,7 @@ interface MethodFactoryRouteChildren {
   MethodFactoryOpenalexRoute: typeof MethodFactoryOpenalexRoute
   MethodFactoryResetPasswordRoute: typeof MethodFactoryResetPasswordRoute
   MethodFactoryReviewRoute: typeof MethodFactoryReviewRoute
+  MethodFactoryWorkspaceRoute: typeof MethodFactoryWorkspaceRoute
   MethodFactoryIndexRoute: typeof MethodFactoryIndexRoute
 }
 
@@ -335,6 +355,7 @@ const MethodFactoryRouteChildren: MethodFactoryRouteChildren = {
   MethodFactoryOpenalexRoute: MethodFactoryOpenalexRoute,
   MethodFactoryResetPasswordRoute: MethodFactoryResetPasswordRoute,
   MethodFactoryReviewRoute: MethodFactoryReviewRoute,
+  MethodFactoryWorkspaceRoute: MethodFactoryWorkspaceRoute,
   MethodFactoryIndexRoute: MethodFactoryIndexRoute,
 }
 

@@ -52,15 +52,34 @@ describe("Factory layouts", () => {
     },
   );
 
-  it("keeps the Claude-era shell and offers internal authentication when access is denied", async () => {
+  it("keeps the public Method Factory landing open without an operator session", () => {
     mocks.currentPath.value = "/method-factory";
+
+    render(<FactoryLayout />);
+
+    expect(screen.getByTestId("factory-route-outlet")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Method Factory" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Como funciona" })).toHaveAttribute(
+      "href",
+      "#como-funciona",
+    );
+    expect(screen.getByRole("link", { name: "Para quem" })).toHaveAttribute("href", "#para-quem");
+    expect(screen.queryByText("Protótipo sem persistência.")).not.toBeInTheDocument();
+    expect(mocks.checkFactoryOperatorAccess).not.toHaveBeenCalled();
+  });
+
+  it("keeps the internal shell and offers authentication when operator access is denied", async () => {
+    mocks.currentPath.value = "/method-factory/workspace";
     mocks.checkFactoryOperatorAccess.mockRejectedValue(new Error("Unauthorized"));
 
     render(<FactoryLayout />);
 
     expect(await screen.findByRole("heading", { name: "Acesso restrito" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Method Factory" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Visão geral" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Visão geral" })).toHaveAttribute(
+      "href",
+      "/method-factory/workspace",
+    );
     expect(screen.getByRole("link", { name: /Briefing/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Abrir autenticação interna" })).toHaveAttribute(
       "href",

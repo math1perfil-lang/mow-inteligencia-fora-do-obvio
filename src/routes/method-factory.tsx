@@ -6,7 +6,7 @@ import { checkFactoryOperatorAccess } from "@/lib/method-factory/workflow.functi
 export const Route = createFileRoute("/method-factory")({
   head: () => ({
     meta: [
-      { title: "Method Factory — MOW · Prévia" },
+      { title: "MOW Method Factory" },
       { name: "robots", content: "noindex, nofollow, noarchive" },
       { name: "referrer", content: "no-referrer" },
     ],
@@ -16,12 +16,14 @@ export const Route = createFileRoute("/method-factory")({
 
 export function FactoryLayout() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isPublicLanding = pathname === "/method-factory" || pathname === "/method-factory/";
   const isOpenAlex = pathname === "/method-factory/openalex";
   const isClientIntake = pathname === "/method-factory/intake";
-  const isPublicFactoryPath =
+  const isStandalonePublicPath =
     isClientIntake ||
     pathname === "/method-factory/review" ||
     pathname === "/method-factory/reset-password";
+  const isPublicFactoryPath = isPublicLanding || isStandalonePublicPath;
   const requiresOperator = pathname.startsWith("/method-factory") && !isPublicFactoryPath;
   const [operatorGate, setOperatorGate] = useState<{
     pathname: string;
@@ -50,7 +52,7 @@ export function FactoryLayout() {
     };
   }, [pathname, requiresOperator]);
 
-  if (isPublicFactoryPath) {
+  if (isStandalonePublicPath) {
     return (
       <div className="min-h-screen bg-[#101010] text-white">
         <main id="factory-content">
@@ -101,41 +103,54 @@ export function FactoryLayout() {
             aria-label="Method Factory"
             className="mf-nav order-3 flex w-full items-center gap-7 overflow-x-auto pt-1 text-base lg:order-none lg:ml-auto lg:w-auto lg:pt-0"
           >
-            <Link
-              to="/method-factory"
-              activeOptions={{ exact: true }}
-              activeProps={{ className: "is-current" }}
-            >
-              Visão geral
-            </Link>
-            <Link to="/method-factory/brief-preview" activeProps={{ className: "is-current" }}>
-              Briefing <ArrowUpRight className="ml-1 inline size-3.5" aria-hidden="true" />
-            </Link>
-          </nav>
-        </div>
-      </header>
-      <div className="relative z-10 mx-auto max-w-7xl px-5 pt-5 sm:px-8">
-        <div className="mf-rise glass flex items-start gap-3.5 px-5 py-3.5 text-[15px] leading-relaxed text-muted-foreground">
-          <FlaskConical className="mt-0.5 size-5 shrink-0 text-[#3a3fb8]" aria-hidden="true" />
-          <p>
-            {isOpenAlex ? (
+            {isPublicLanding ? (
               <>
-                <strong className="font-semibold text-foreground">Área interna da Factory.</strong>{" "}
-                Revisão e OpenAlex exigem autorização verificada no servidor. A busca aceita somente
-                termos temáticos curtos e retorna metadados bibliográficos temporários.
+                <a href="#como-funciona">Como funciona</a>
+                <a href="#para-quem">Para quem</a>
               </>
             ) : (
               <>
-                <strong className="font-semibold text-foreground">
-                  Protótipo sem persistência.
-                </strong>{" "}
-                Use apenas dados fictícios. As respostas ficam somente na memória desta página: não
-                são enviadas, salvas nem analisadas por IA. Recarregar ou sair apaga tudo.
+                <Link
+                  to="/method-factory/workspace"
+                  activeOptions={{ exact: true }}
+                  activeProps={{ className: "is-current" }}
+                >
+                  Visão geral
+                </Link>
+                <Link to="/method-factory/brief-preview" activeProps={{ className: "is-current" }}>
+                  Briefing <ArrowUpRight className="ml-1 inline size-3.5" aria-hidden="true" />
+                </Link>
               </>
             )}
-          </p>
+          </nav>
         </div>
-      </div>
+      </header>
+      {!isPublicLanding ? (
+        <div className="relative z-10 mx-auto max-w-7xl px-5 pt-5 sm:px-8">
+          <div className="mf-rise glass flex items-start gap-3.5 px-5 py-3.5 text-[15px] leading-relaxed text-muted-foreground">
+            <FlaskConical className="mt-0.5 size-5 shrink-0 text-[#3a3fb8]" aria-hidden="true" />
+            <p>
+              {isOpenAlex ? (
+                <>
+                  <strong className="font-semibold text-foreground">
+                    Área interna da Factory.
+                  </strong>{" "}
+                  Revisão e OpenAlex exigem autorização verificada no servidor. A busca aceita
+                  somente termos temáticos curtos e retorna metadados bibliográficos temporários.
+                </>
+              ) : (
+                <>
+                  <strong className="font-semibold text-foreground">
+                    Protótipo sem persistência.
+                  </strong>{" "}
+                  Use apenas dados fictícios. As respostas ficam somente na memória desta página:
+                  não são enviadas, salvas nem analisadas por IA. Recarregar ou sair apaga tudo.
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+      ) : null}
       <main
         id="factory-content"
         className={`relative z-10 ${isOpenAlex ? "bg-[#101010] text-white" : ""}`}
@@ -177,7 +192,9 @@ export function FactoryLayout() {
       <footer className="relative z-10 mt-16 border-t border-border px-5 py-6 sm:px-8">
         <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           <span>Inteligência fora do óbvio. Evidência dentro do processo.</span>
-          <span>Prévia 0.1 · Envio real desativado</span>
+          <span>
+            {isPublicLanding ? "MOW Method Factory" : "Prévia 0.1 · Envio real desativado"}
+          </span>
         </div>
       </footer>
     </div>

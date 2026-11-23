@@ -4,11 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   currentPath: { value: "" },
-  access: {
-    userId: null as string | null,
-    status: "checking" as "checking" | "allowed" | "denied" | "no_session" | "unconfigured",
-    version: 1,
-  },
   checkFactoryOperatorAccess: vi.fn(),
 }));
 
@@ -30,17 +25,10 @@ vi.mock("@/lib/method-factory/workflow.functions", () => ({
   checkFactoryOperatorAccess: mocks.checkFactoryOperatorAccess,
 }));
 
-vi.mock("@/lib/mow-gki/use-openalex-owner-access", () => ({
-  useOpenAlexOwnerAccess: () => mocks.access,
-}));
-
 import { FactoryLayout } from "./method-factory";
 
 beforeEach(() => {
   mocks.currentPath.value = "";
-  mocks.access.userId = null;
-  mocks.access.status = "checking";
-  mocks.access.version = 1;
   mocks.checkFactoryOperatorAccess.mockResolvedValue({ allowed: true });
 });
 
@@ -64,36 +52,33 @@ describe("Factory layouts", () => {
     },
   );
 
-  it("withholds an internal route when the operator check denies access", async () => {
-    mocks.currentPath.value = "/method-factory/openalex";
+  it("keeps the Claude-era shell and offers internal authentication when access is denied", async () => {
+    mocks.currentPath.value = "/method-factory";
     mocks.checkFactoryOperatorAccess.mockRejectedValue(new Error("Unauthorized"));
 
     render(<FactoryLayout />);
 
-    expect(await screen.findByRole("heading", { name: "Área indisponível" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Acesso restrito" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Method Factory" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Visão geral" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Briefing/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Abrir autenticação interna" })).toHaveAttribute(
+      "href",
+      "/method-factory/review",
+    );
     expect(screen.queryByTestId("factory-route-outlet")).not.toBeInTheDocument();
-    expect(screen.queryByText("OpenAlex")).not.toBeInTheDocument();
-    expect(mocks.checkFactoryOperatorAccess).toHaveBeenCalledWith({ data: {} });
   });
 
-  it("hides the OpenAlex navigation link from a reviewer or unverified operator", async () => {
-    mocks.currentPath.value = "/method-factory";
-    mocks.access.userId = "reviewer-1";
-    mocks.access.status = "denied";
+  it("preserves the original navigation while keeping the OpenAlex route directly accessible", async () => {
+    mocks.currentPath.value = "/method-factory/openalex";
 
     render(<FactoryLayout />);
 
-    expect(await screen.findByRole("navigation", { name: "Method Factory" })).toBeInTheDocument();
+    expect(await screen.findByTestId("factory-route-outlet")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Method Factory" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Visão geral" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Briefing/ })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Revisão interna" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "OpenAlex" })).not.toBeInTheDocument();
-  });
-
-  it("shows the OpenAlex link only after active-owner access is confirmed", async () => {
-    mocks.currentPath.value = "/method-factory";
-    mocks.access.userId = "owner-1";
-    mocks.access.status = "allowed";
-
-    render(<FactoryLayout />);
-
-    expect(await screen.findByRole("link", { name: "OpenAlex" })).toBeInTheDocument();
   });
 });

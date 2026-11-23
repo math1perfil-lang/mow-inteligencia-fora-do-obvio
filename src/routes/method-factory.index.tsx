@@ -37,7 +37,7 @@ function FactoryOverview() {
             Da dor à hipótese de solução.
           </h2>
           <span className="font-mono text-xs text-muted-foreground">
-            OpenAlex interno separado · briefing ainda sem automação integrada
+            Percurso planejado — não automatizado
           </span>
         </div>
         <ol className="mt-7 grid gap-4 md:grid-cols-3">
@@ -46,19 +46,19 @@ function FactoryOverview() {
               icon: FileText,
               title: "01 / Briefing",
               detail: "Contexto, dores e lacunas reais.",
-              state: "Prévia em memória · intake por convite não ativado",
+              state: "Prévia disponível",
             },
             {
               icon: BookOpen,
               title: "02 / Conhecimento",
               detail: "Fontes, evidências e direitos de uso.",
-              state: "OpenAlex owner-only · metadados temporários para teste",
+              state: "Próxima etapa",
             },
             {
               icon: ShieldCheck,
               title: "03 / Revisão",
               detail: "Decisões humanas, antes da aplicação.",
-              state: "Rota restrita · aprovação e persistência não validadas",
+              state: "Próxima etapa",
             },
           ].map((item) => (
             <li

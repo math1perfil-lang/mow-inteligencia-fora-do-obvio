@@ -160,7 +160,7 @@ export function FactoryIntake() {
   if (inviteState !== "valid") {
     return (
       <div className="mx-auto max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
-        <p className="eyebrow text-white/60">Method Factory · Briefing confidencial</p>
+        <p className="eyebrow text-muted-foreground">Method Factory · Briefing confidencial</p>
         <h1
           ref={heading}
           tabIndex={-1}
@@ -172,7 +172,7 @@ export function FactoryIntake() {
         </h1>
         <p
           role={inviteState === "invalid" ? "alert" : "status"}
-          className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70"
+          className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground"
         >
           {inviteState === "checking"
             ? "Aguarde enquanto verificamos o acesso."
@@ -185,8 +185,8 @@ export function FactoryIntake() {
   if (receipt) {
     return (
       <div className="mx-auto max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
-        <p className="eyebrow text-white/60">Method Factory · Recebimento</p>
-        <div className="mt-6 flex max-w-2xl gap-4 border border-white/20 p-5 sm:p-7">
+        <p className="eyebrow text-muted-foreground">Method Factory · Recebimento</p>
+        <div className="mt-6 flex max-w-2xl gap-4 border border-foreground/25 p-5 sm:p-7">
           <Check className="mt-1 size-5 shrink-0" aria-hidden="true" />
           <div>
             <h1
@@ -197,9 +197,11 @@ export function FactoryIntake() {
               Briefing recebido
             </h1>
             {receipt.receiptCode ? (
-              <p className="mt-3 font-mono text-sm text-white/75">Recibo: {receipt.receiptCode}</p>
+              <p className="mt-3 font-mono text-sm text-muted-foreground">
+                Recibo: {receipt.receiptCode}
+              </p>
             ) : null}
-            <p className="mt-4 text-sm leading-relaxed text-white/70">
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               Obrigado por compartilhar o contexto. Este envio não gera resposta ou recomendação
               automática para a empresa. Qualquer rascunho interno exige revisão humana.
             </p>
@@ -212,12 +214,12 @@ export function FactoryIntake() {
   return (
     <div className="mx-auto max-w-7xl px-5 pt-10 sm:px-8 sm:pt-14">
       <div className="max-w-3xl">
-        <p className="eyebrow text-white/60">Briefing · Entrada de contexto</p>
+        <p className="eyebrow text-muted-foreground">Briefing · Entrada de contexto</p>
         <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tighter sm:text-5xl">
           Antes da solução,
           <br />a pergunta certa.
         </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70">
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Compartilhe informações necessárias para uma análise interna. Não inclua dados pessoais,
           credenciais, contatos ou materiais protegidos. Nenhum arquivo ou anexo é solicitado.
         </p>
@@ -234,7 +236,7 @@ export function FactoryIntake() {
                     disabled={i > index}
                     aria-current={i === index ? "step" : undefined}
                     onClick={() => navigate(i)}
-                    className={`flex min-h-12 w-full items-center gap-3 whitespace-nowrap border px-3 py-3 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:text-white/35 ${i === index ? "border-white bg-white text-black" : "border-transparent text-white/65 hover:border-white/20"}`}
+                    className={`flex min-h-12 w-full items-center gap-3 whitespace-nowrap border px-3 py-3 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:text-muted-foreground ${i === index ? "border-foreground bg-foreground text-background" : "border-transparent text-muted-foreground hover:border-foreground/25"}`}
                   >
                     <span className="font-mono text-xs">
                       {i < index ? (
@@ -249,15 +251,15 @@ export function FactoryIntake() {
               ))}
             </ol>
           </nav>
-          <p className="mt-4 hidden border-t border-white/15 pt-4 text-xs leading-relaxed text-white/60 lg:block">
+          <p className="mt-4 hidden border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground lg:block">
             Suas respostas são usadas no fluxo interno da Factory. O envio não significa validação
             independente nem aprovação de um método.
           </p>
         </aside>
 
         <section className="min-w-0 flex-1 lg:max-w-3xl" aria-labelledby="intake-step-title">
-          <div className="mb-7 border-b border-white/20 pb-6">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-white/65">
+          <div className="mb-7 border-b border-foreground/25 pb-6">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               {index + 1} de {steps.length + 1} ·{" "}
               {reviewing ? "Confira antes de enviar" : "* Campo necessário"}
             </p>
@@ -269,7 +271,7 @@ export function FactoryIntake() {
             >
               {reviewing ? "Revisar e confirmar" : step?.title}
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/65">
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {reviewing
                 ? "Revise as informações e confirme o uso interno para enviar."
                 : step?.description}
@@ -279,7 +281,7 @@ export function FactoryIntake() {
           {notice ? (
             <p
               role="status"
-              className="mb-6 border border-white/30 bg-white/5 p-4 text-sm leading-relaxed"
+              className="mb-6 border border-foreground/25 bg-white/60 p-4 text-sm leading-relaxed"
             >
               {notice}
             </p>
@@ -289,7 +291,7 @@ export function FactoryIntake() {
             <div>
               <div className="space-y-7">
                 {steps.map((item, stepIndex) => (
-                  <section key={item.id} className="border border-white/20 p-5 sm:p-6">
+                  <section key={item.id} className="border border-foreground/25 p-5 sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-base font-medium">{item.title}</h3>
                       <Button
@@ -304,25 +306,25 @@ export function FactoryIntake() {
                     <dl className="mt-4 space-y-5">
                       {visibleFields(item, values).map((field) => (
                         <div key={field.id}>
-                          <dt className="text-xs text-white/55">{field.label}</dt>
+                          <dt className="text-xs text-muted-foreground">{field.label}</dt>
                           {field.kind === "problem-list" ? (
                             <dd className="mt-2 space-y-3">
                               {parseProblemEntries(values[field.id]).map((entry, entryIndex) => (
                                 <div
                                   key={entryIndex}
-                                  className="border-l border-white/40 pl-3 text-sm leading-relaxed"
+                                  className="border-l border-foreground/25 pl-3 text-sm leading-relaxed"
                                 >
                                   <p className="font-medium">
                                     {entry.title || `Dor ${entryIndex + 1}`}
                                   </p>
-                                  <p className="text-white/65">
+                                  <p className="text-muted-foreground">
                                     {entry.domain} · Prioridade percebida: {entry.urgency}
                                   </p>
                                   <p className="mt-1 whitespace-pre-wrap break-words">
                                     {entry.description}
                                   </p>
                                   {entry.impact ? (
-                                    <p className="mt-1 text-white/65">
+                                    <p className="mt-1 text-muted-foreground">
                                       Impacto informado: {entry.impact}
                                     </p>
                                   ) : null}
@@ -341,14 +343,14 @@ export function FactoryIntake() {
                 ))}
               </div>
 
-              <div className="mt-7 flex gap-3 border border-white/20 p-5 text-sm leading-relaxed text-white/70">
+              <div className="mt-7 flex gap-3 border border-foreground/25 p-5 text-sm leading-relaxed text-muted-foreground">
                 <ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
                 <p>
                   O conteúdo é recebido para uso interno. O rascunho, se produzido, não é uma
                   recomendação automática para a empresa e exige revisão humana.
                 </p>
               </div>
-              <div className="mt-6 border border-white/20 p-5">
+              <div className="mt-6 border border-foreground/25 p-5">
                 <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed">
                   <input
                     type="checkbox"
@@ -363,7 +365,7 @@ export function FactoryIntake() {
                   </span>
                 </label>
               </div>
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/15 pt-6">
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
                 <Button
                   type="button"
                   variant="outline"
@@ -404,7 +406,7 @@ export function FactoryIntake() {
                   />
                 ))}
               </div>
-              <div className="mt-10 flex items-center justify-between gap-4 border-t border-white/15 pt-6">
+              <div className="mt-10 flex items-center justify-between gap-4 border-t border-border pt-6">
                 <Button
                   type="button"
                   variant="ghost"
@@ -463,18 +465,18 @@ function BriefField({
       <Label htmlFor={field.id} className="text-base leading-relaxed">
         {field.label}{" "}
         {field.required ? (
-          <span className="text-white/65">*</span>
+          <span className="text-muted-foreground">*</span>
         ) : (
-          <span className="text-xs font-normal text-white/55">· opcional</span>
+          <span className="text-xs font-normal text-muted-foreground">· opcional</span>
         )}
       </Label>
-      <p id={hintId} className="text-sm leading-relaxed text-white/65">
+      <p id={hintId} className="text-sm leading-relaxed text-muted-foreground">
         {field.help ?? "Compartilhe contexto, não dados pessoais ou credenciais."}
       </p>
       {field.kind === "select" ? (
         <select
           {...common}
-          className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="h-12 w-full border border-foreground/25 bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <option value="">Selecione uma resposta</option>
           {field.options?.map((option) => (
@@ -489,7 +491,7 @@ function BriefField({
           maxLength={limit}
           rows={4}
           placeholder={field.placeholder ?? "Escreva com suas palavras. Se não souber, diga isso."}
-          className="min-h-28 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+          className="min-h-28 border-foreground/25 bg-white text-base placeholder:text-muted-foreground"
         />
       ) : (
         <Input
@@ -498,16 +500,16 @@ function BriefField({
           maxLength={limit}
           placeholder={field.placeholder ?? "Descreva ou informe que ainda não sabe"}
           autoComplete="off"
-          className="h-12 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+          className="h-12 border-foreground/25 bg-white text-base placeholder:text-muted-foreground"
         />
       )}
       {error ? (
-        <p id={errorId} className="text-sm font-medium text-white" role="alert">
+        <p id={errorId} className="text-sm font-medium text-foreground" role="alert">
           {error}
         </p>
       ) : null}
       {field.kind === "textarea" ? (
-        <p className="text-right font-mono text-[10px] text-white/50">
+        <p className="text-right font-mono text-[10px] text-muted-foreground">
           {value.length}/{limit} caracteres
         </p>
       ) : null}
@@ -543,15 +545,15 @@ function ProblemListField({
       aria-describedby={error ? `${field.id}-hint ${field.id}-error` : `${field.id}-hint`}
     >
       <legend className="text-base leading-relaxed">
-        {field.label} <span className="text-white/65">*</span>
+        {field.label} <span className="text-muted-foreground">*</span>
       </legend>
-      <p id={`${field.id}-hint`} className="text-sm leading-relaxed text-white/65">
+      <p id={`${field.id}-hint`} className="text-sm leading-relaxed text-muted-foreground">
         {field.help ?? "Descreva cada dor separadamente."}
       </p>
       {entries.map((entry, index) => (
         <section
           key={index}
-          className="space-y-5 border border-white/20 p-4 sm:p-5"
+          className="space-y-5 border border-foreground/25 p-4 sm:p-5"
           aria-labelledby={`problem-heading-${index}`}
         >
           <div className="flex items-center justify-between gap-3">
@@ -581,7 +583,7 @@ function ProblemListField({
               autoComplete="off"
               placeholder="Ex.: propostas comerciais não avançam"
               onChange={(event) => update(index, { title: event.target.value })}
-              className="h-12 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+              className="h-12 border-foreground/25 bg-white text-base placeholder:text-muted-foreground"
             />
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
@@ -591,7 +593,7 @@ function ProblemListField({
                 id={`problem-domain-${index}`}
                 value={entry.domain}
                 onChange={(event) => update(index, { domain: event.target.value })}
-                className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="h-12 w-full border border-foreground/25 bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <option value="">Selecione ou marque “Ainda não sei”</option>
                 {PROBLEM_DOMAINS.map((domain) => (
@@ -607,7 +609,7 @@ function ProblemListField({
                 id={`problem-urgency-${index}`}
                 value={entry.urgency}
                 onChange={(event) => update(index, { urgency: event.target.value })}
-                className="h-12 w-full border border-white/25 bg-[#151515] px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="h-12 w-full border border-foreground/25 bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <option value="">Selecione uma opção</option>
                 {PROBLEM_URGENCY.map((urgency) => (
@@ -627,7 +629,7 @@ function ProblemListField({
               rows={4}
               placeholder="O que acontece, com quem e em que contexto?"
               onChange={(event) => update(index, { description: event.target.value })}
-              className="min-h-28 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+              className="min-h-28 border-foreground/25 bg-white text-base placeholder:text-muted-foreground"
             />
           </div>
           <div className="space-y-2">
@@ -639,7 +641,7 @@ function ProblemListField({
               rows={3}
               placeholder="Se não for conhecido ou medido, diga isso."
               onChange={(event) => update(index, { impact: event.target.value })}
-              className="min-h-24 border-white/25 bg-white/[0.025] text-base placeholder:text-white/40"
+              className="min-h-24 border-foreground/25 bg-white text-base placeholder:text-muted-foreground"
             />
           </div>
         </section>
@@ -654,7 +656,7 @@ function ProblemListField({
         Adicionar outra dor
       </Button>
       {error ? (
-        <p id={`${field.id}-error`} className="text-sm font-medium text-white" role="alert">
+        <p id={`${field.id}-error`} className="text-sm font-medium text-foreground" role="alert">
           {error}
         </p>
       ) : null}

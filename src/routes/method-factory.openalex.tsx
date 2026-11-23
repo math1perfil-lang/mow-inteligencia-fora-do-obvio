@@ -178,13 +178,13 @@ export function OpenAlexDiscoveryPage() {
   if (access.status === "checking") {
     return (
       <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-20" aria-live="polite">
-        <p className="font-mono text-xs uppercase tracking-[0.16em] text-white/60">
+        <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
           Base interna · OpenAlex
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
           Verificando acesso
         </h1>
-        <p className="mt-5 text-sm leading-relaxed text-white/70">
+        <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
           A página só carrega a busca depois da confirmação server-side de owner ativo.
         </p>
       </main>
@@ -194,7 +194,7 @@ export function OpenAlexDiscoveryPage() {
   if (access.status !== "allowed") {
     return (
       <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.16em] text-white/60">
+        <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
           Base interna · OpenAlex
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -207,10 +207,11 @@ export function OpenAlexDiscoveryPage() {
         >
           <div className="flex items-start gap-3">
             <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-200" aria-hidden="true" />
-            <div className="space-y-3 text-sm leading-relaxed text-white/75">
+            <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
               <p>
-                <strong className="text-white">Somente owner ativo da Factory.</strong> Reviewer,
-                owner inativo ou sessão ausente não podem acessar dados nem controles do GKI.
+                <strong className="text-foreground">Somente owner ativo da Factory.</strong>{" "}
+                Reviewer, owner inativo ou sessão ausente não podem acessar dados nem controles do
+                GKI.
               </p>
               {access.status === "unconfigured" ? (
                 <p>O serviço Supabase não está configurado neste ambiente.</p>
@@ -224,18 +225,18 @@ export function OpenAlexDiscoveryPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-14 sm:px-8 sm:py-18">
-      <p className="font-mono text-xs uppercase tracking-[0.16em] text-white/60">
+      <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
         Base interna · owner ativo
       </p>
       <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">Busca OpenAlex</h1>
-      <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/70">
+      <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
         Pesquisa temática curta vinculada a um briefing em revisão. O briefing completo nunca é
         enviado ao OpenAlex.
       </p>
 
-      <section className="mt-8 border border-white/15 bg-white/[0.03] p-5 sm:p-7">
+      <section className="mt-8 border border-border bg-white p-5 sm:p-7">
         <h2 className="text-lg font-semibold">Consulta bibliográfica</h2>
-        <p className="mt-2 text-sm leading-relaxed text-white/70">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           A busca corresponde somente a títulos e solicita título, autores, ano, tipo, idioma e DOI.
           Não consulta nem retorna abstracts, texto integral, licenças ou links para PDFs.
         </p>
@@ -264,12 +265,12 @@ export function OpenAlexDiscoveryPage() {
               onChange={(event) => updateDraft({ query: event.currentTarget.value })}
               required
             />
-            <p className="text-xs leading-relaxed text-white/55">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               Não cole o briefing. Não use nomes, e-mails, telefones, credenciais ou informação
               confidencial; a validação automática não reconhece todo dado pessoal.
             </p>
           </div>
-          <label className="flex items-start gap-3 text-sm leading-relaxed text-white/75">
+          <label className="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
             <input
               className="mt-1 size-4 accent-white"
               type="checkbox"
@@ -294,12 +295,15 @@ export function OpenAlexDiscoveryPage() {
       </section>
 
       {search.currentRun ? (
-        <section className="mt-6 border border-white/15 p-5 sm:p-7" aria-label="Execução atual">
+        <section className="mt-6 border border-border p-5 sm:p-7" aria-label="Execução atual">
           <div className="flex items-start gap-3">
-            <BookOpenCheck className="mt-0.5 size-5 shrink-0 text-white/70" aria-hidden="true" />
-            <div className="min-w-0 space-y-2 text-sm leading-relaxed text-white/75">
-              <h2 className="font-semibold text-white">Pesquisa vinculada ao briefing</h2>
-              <p className="break-all font-mono text-xs text-white/55">
+            <BookOpenCheck
+              className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <div className="min-w-0 space-y-2 text-sm leading-relaxed text-muted-foreground">
+              <h2 className="font-semibold text-foreground">Pesquisa vinculada ao briefing</h2>
+              <p className="break-all font-mono text-xs text-muted-foreground">
                 Execução: {search.currentRun.id}
               </p>
               <p>Termos registrados: {search.currentRun.question}</p>
@@ -320,20 +324,20 @@ export function OpenAlexDiscoveryPage() {
       ) : null}
 
       {search.notice ? (
-        <p className="mt-5 text-sm leading-relaxed text-white/75" role="status">
+        <p className="mt-5 text-sm leading-relaxed text-muted-foreground" role="status">
           {search.notice}
         </p>
       ) : null}
 
       <section className="mt-8 border border-amber-200/25 bg-amber-100/[0.04] p-5 sm:p-7">
-        <h2 className="font-semibold text-white">Limites de uso e direitos</h2>
-        <p className="mt-2 text-sm leading-relaxed text-white/75">
+        <h2 className="font-semibold text-foreground">Limites de uso e direitos</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Os itens abaixo são metadados bibliográficos não curados e voláteis, mantidos apenas na
           memória desta página. A licença dos metadados do OpenAlex não libera o conteúdo das obras.
           Os direitos de cada obra permanecem “não avaliados”; não use, reproduza ou comunique
           conteúdo até uma revisão humana integral e uma avaliação de direitos por material.
         </p>
-        <p className="mt-2 text-sm leading-relaxed text-white/75">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Esta busca não persiste candidatos, não faz curadoria, não cria pacote metodológico e não
           substitui a revisão humana antes de qualquer uso ou comunicação externa. A atribuição das
           fontes permanece somente interna à equipe MOW.
@@ -344,41 +348,43 @@ export function OpenAlexDiscoveryPage() {
         <section className="mt-8 space-y-4" aria-label="Metadados bibliográficos">
           <div className="flex items-baseline justify-between gap-4">
             <h2 className="text-xl font-semibold">Metadados encontrados</h2>
-            <p className="text-xs text-white/55">
+            <p className="text-xs text-muted-foreground">
               {search.page.results.length} exibidos
               {search.page.resultCount === null ? "" : ` · ${search.page.resultCount} no índice`}
             </p>
           </div>
           {search.page.results.length === 0 ? (
-            <p className="border border-white/15 p-5 text-sm text-white/70">
+            <p className="border border-border p-5 text-sm text-muted-foreground">
               Nenhum registro bibliográfico foi encontrado com esses termos no título.
             </p>
           ) : (
             search.page.results.map((work) => (
-              <article key={work.providerRecordId} className="border border-white/15 p-5 sm:p-6">
-                <h3 className="text-base font-semibold leading-relaxed text-white">{work.title}</h3>
-                <dl className="mt-3 grid gap-2 text-sm text-white/70 sm:grid-cols-2">
+              <article key={work.providerRecordId} className="border border-border p-5 sm:p-6">
+                <h3 className="text-base font-semibold leading-relaxed text-foreground">
+                  {work.title}
+                </h3>
+                <dl className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
                   <div>
-                    <dt className="inline font-medium text-white/85">Autores: </dt>
+                    <dt className="inline font-medium text-foreground/85">Autores: </dt>
                     <dd className="inline">
                       {work.authors.length ? work.authors.join(", ") : "Não informado"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="inline font-medium text-white/85">Ano: </dt>
+                    <dt className="inline font-medium text-foreground/85">Ano: </dt>
                     <dd className="inline">{work.publicationYear ?? "Não informado"}</dd>
                   </div>
                   <div>
-                    <dt className="inline font-medium text-white/85">Tipo: </dt>
+                    <dt className="inline font-medium text-foreground/85">Tipo: </dt>
                     <dd className="inline">{work.publicationType}</dd>
                   </div>
                   <div>
-                    <dt className="inline font-medium text-white/85">Idioma: </dt>
+                    <dt className="inline font-medium text-foreground/85">Idioma: </dt>
                     <dd className="inline">{work.language ?? "Não informado"}</dd>
                   </div>
                   {work.doi ? (
                     <div className="sm:col-span-2">
-                      <dt className="inline font-medium text-white/85">DOI: </dt>
+                      <dt className="inline font-medium text-foreground/85">DOI: </dt>
                       <dd className="inline">
                         <a href={work.doi} target="_blank" rel="noreferrer" className="underline">
                           {work.doi}
@@ -392,7 +398,7 @@ export function OpenAlexDiscoveryPage() {
                     href={work.providerRecordUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-white underline underline-offset-4"
+                    className="text-foreground underline underline-offset-4"
                   >
                     Registro OpenAlex
                   </a>

@@ -52,23 +52,11 @@ export function FactoryLayout() {
     };
   }, [pathname, requiresOperator]);
 
-  if (isStandalonePublicPath) {
-    return (
-      <div className="min-h-screen bg-[#101010] text-white">
-        <main id="factory-content">
-          <Outlet />
-        </main>
-      </div>
-    );
-  }
-
   const operatorGateStatus = operatorGate.pathname === pathname ? operatorGate.status : "checking";
   const isGateVisible = requiresOperator && operatorGateStatus !== "allowed";
 
   return (
-    <div
-      className={`mf-root relative min-h-screen overflow-hidden ${isOpenAlex ? "bg-[#101010] text-white" : "bg-background text-foreground"}`}
-    >
+    <div className="mf-root relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="mf-glow mf-g1" aria-hidden="true" />
       <div className="mf-glow mf-g2" aria-hidden="true" />
       <div className="mf-glow mf-g3" aria-hidden="true" />
@@ -108,6 +96,8 @@ export function FactoryLayout() {
                 <a href="#como-funciona">Como funciona</a>
                 <a href="#para-quem">Para quem</a>
               </>
+            ) : isStandalonePublicPath ? (
+              <Link to="/method-factory">Method Factory</Link>
             ) : (
               <>
                 <Link
@@ -125,7 +115,7 @@ export function FactoryLayout() {
           </nav>
         </div>
       </header>
-      {!isPublicLanding ? (
+      {!isPublicFactoryPath ? (
         <div className="relative z-10 mx-auto max-w-7xl px-5 pt-5 sm:px-8">
           <div className="mf-rise glass flex items-start gap-3.5 px-5 py-3.5 text-[15px] leading-relaxed text-muted-foreground">
             <FlaskConical className="mt-0.5 size-5 shrink-0 text-[#3a3fb8]" aria-hidden="true" />
@@ -151,10 +141,7 @@ export function FactoryLayout() {
           </div>
         </div>
       ) : null}
-      <main
-        id="factory-content"
-        className={`relative z-10 ${isOpenAlex ? "bg-[#101010] text-white" : ""}`}
-      >
+      <main id="factory-content" className="relative z-10">
         {isGateVisible ? (
           <section className="mx-auto max-w-7xl px-5 pt-12 sm:px-8 sm:pt-20" aria-live="polite">
             <div className="glass max-w-2xl p-6 sm:p-8">
@@ -162,14 +149,10 @@ export function FactoryLayout() {
                 <span className="mf-dot" aria-hidden="true" />
                 Área interna
               </p>
-              <h1
-                className={`mt-6 text-3xl font-light tracking-tight sm:text-4xl ${isOpenAlex ? "text-white" : "text-foreground"}`}
-              >
+              <h1 className="mt-6 text-3xl font-light tracking-tight text-foreground sm:text-4xl">
                 {operatorGateStatus === "checking" ? "Verificando acesso" : "Acesso restrito"}
               </h1>
-              <p
-                className={`mt-4 text-sm leading-relaxed ${isOpenAlex ? "text-white/70" : "text-muted-foreground"}`}
-              >
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                 {operatorGateStatus === "checking"
                   ? "Aguarde enquanto verificamos a autorização desta página."
                   : "Esta área é exclusiva para operadoras ativas. Entre pela revisão interna com a conta autorizada do projeto Mow Group e tente novamente."}
@@ -177,7 +160,7 @@ export function FactoryLayout() {
               {operatorGateStatus === "denied" ? (
                 <Link
                   to="/method-factory/review"
-                  className={`mt-6 inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-medium transition-opacity hover:opacity-85 ${isOpenAlex ? "bg-white text-black" : "bg-foreground text-background"}`}
+                  className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background transition-opacity hover:opacity-85"
                 >
                   Abrir autenticação interna
                   <ArrowUpRight className="size-4" aria-hidden="true" />
@@ -193,7 +176,7 @@ export function FactoryLayout() {
         <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           <span>Inteligência fora do óbvio. Evidência dentro do processo.</span>
           <span>
-            {isPublicLanding ? "MOW Method Factory" : "Prévia 0.1 · Envio real desativado"}
+            {isPublicFactoryPath ? "MOW Method Factory" : "Prévia 0.1 · Envio real desativado"}
           </span>
         </div>
       </footer>

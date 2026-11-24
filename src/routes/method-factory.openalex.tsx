@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { searchOpenAlexForRun, startOpenAlexResearchRun } from "@/lib/mow-gki/openalex.functions";
+import { getOpenAlexFailureNotice } from "@/lib/mow-gki/openalex-error-messages";
 import type { OpenAlexWorksPage } from "@/lib/mow-gki/server/openalex-client";
 import type { OpenAlexResearchRunSummary } from "@/lib/mow-gki/research-run.schema";
 import { useOpenAlexOwnerAccess } from "@/lib/mow-gki/use-openalex-owner-access";
@@ -20,6 +21,7 @@ type SearchState = {
   version: number;
   currentRun: OpenAlexResearchRunSummary | null;
   page: OpenAlexWorksPage | null;
+  queryStatus: "idle" | "searching" | "completed" | "failed";
   busy: boolean;
   notice: string;
 };
@@ -31,7 +33,14 @@ function emptyDraft(version: number, sourceBriefId = ""): DraftState {
 }
 
 function emptySearch(version: number): SearchState {
-  return { version, currentRun: null, page: null, busy: false, notice: "" };
+  return {
+    version,
+    currentRun: null,
+    page: null,
+    queryStatus: "idle",
+    busy: false,
+    notice: "",
+  };
 }
 
 export const Route = createFileRoute("/method-factory/openalex")({
@@ -84,7 +93,13 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
   ) {
     setSearchState((current) => {
       const base = current.version === ownerVersion ? current : emptySearch(ownerVersion);
-      return { ...base, page: null, notice: "", version: ownerVersion };
+      return {
+        ...base,
+        page: null,
+        queryStatus: "searching",
+        notice: "",
+        version: ownerVersion,
+      };
     });
     try {
       const result = await searchOpenAlexForRun({
@@ -101,17 +116,18 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
         return {
           ...current,
           page: result,
+          queryStatus: "completed",
           notice: "Resultados bibliográficos temporários; nada foi salvo como fonte curada.",
         };
       });
-    } catch {
+    } catch (error) {
       if (currentUserId.current !== ownerId) return;
       setSearchState((current) => {
         if (current.version !== ownerVersion) return current;
         return {
           ...current,
-          notice:
-            "A consulta não foi concluída. Se a execução foi criada, você pode tentar novamente sem criar outra.",
+          queryStatus: "failed",
+          notice: getOpenAlexFailureNotice(error),
         };
       });
     }
@@ -319,7 +335,18 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
                 Execução: {search.currentRun.id}
               </p>
               <p>Termos registrados: {search.currentRun.question}</p>
-              <p>Estado: em andamento · lease liberado após a consulta.</p>
+              <p>Estado da execução: em andamento.</p>
+              <p>
+                Estado da consulta:{" "}
+                {search.queryStatus === "searching"
+                  ? "em andamento"
+                  : search.queryStatus === "completed"
+                    ? "concluída"
+                    : search.queryStatus === "failed"
+                      ? "não concluída"
+                      : "aguardando"}
+                .
+              </p>
               <p>Se necessário, repita a consulta sem criar uma nova execução.</p>
               <Button
                 type="button"

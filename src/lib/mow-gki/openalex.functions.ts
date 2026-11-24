@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { getSupabase } from "@/lib/supabase";
 import { z } from "zod";
+import { toOpenAlexFailureToken } from "./openalex-error-messages";
 import { openAlexQuerySchema } from "./openalex-query.schema";
 import {
   OpenAlexDiscoveryError,
@@ -179,7 +180,12 @@ export const searchOpenAlexForRun = createServerFn({ method: "POST" })
         const { data: released, error } = await rpc.rpc("gki_release_openalex_discovery_lease", {
           p_lease_token: leaseId,
         });
-        if (error || released !== true) throw new Error("Não foi possível liberar a reserva GKI.");
+        if (error || released !== true) {
+          throw new OpenAlexDiscoveryError(
+            "lease_unavailable",
+            "Não foi possível liberar a reserva GKI.",
+          );
+        }
       },
       openAlexClient: new OpenAlexClient(),
     });
@@ -191,7 +197,6 @@ export const searchOpenAlexForRun = createServerFn({ method: "POST" })
         ...(data.perPage === undefined ? {} : { perPage: data.perPage }),
       });
     } catch (error) {
-      if (error instanceof OpenAlexDiscoveryError) throw new Error(error.message);
-      throw new Error("Não foi possível concluir a busca OpenAlex. Tente novamente mais tarde.");
+      throw new Error(toOpenAlexFailureToken(error));
     }
   });

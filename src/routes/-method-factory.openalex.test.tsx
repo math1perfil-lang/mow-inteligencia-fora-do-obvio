@@ -21,6 +21,7 @@ vi.mock("@/lib/mow-gki/openalex.functions", () => ({
 }));
 
 import { OpenAlexDiscoveryPage } from "./method-factory.openalex";
+import { OPENALEX_FAILURE_TOKEN_PREFIX } from "@/lib/mow-gki/openalex-error-messages";
 
 const BRIEF_ID = "00000000-0000-4000-8000-000000000001";
 const RUN_ID = "00000000-0000-4000-8000-000000000002";
@@ -90,6 +91,7 @@ describe("OpenAlex internal discovery page", () => {
     fireEvent.click(screen.getByRole("button", { name: /Iniciar pesquisa e buscar metadados/ }));
 
     expect(await screen.findByText("Synthetic title-only result")).toBeInTheDocument();
+    expect(screen.getByText("Estado da consulta: concluída.")).toBeInTheDocument();
     expect(mocks.start).toHaveBeenCalledWith({
       data: {
         sourceBriefId: BRIEF_ID,
@@ -123,6 +125,27 @@ describe("OpenAlex internal discovery page", () => {
         perPage: 10,
       },
     });
+  });
+
+  it("shows a safe rate-limit notice and keeps the same execution retryable", async () => {
+    mocks.search.mockRejectedValueOnce(new Error(`${OPENALEX_FAILURE_TOKEN_PREFIX}rate_limited`));
+    render(<OpenAlexDiscoveryPage initialBriefId={BRIEF_ID} />);
+
+    fireEvent.change(screen.getByLabelText(/Termos temáticos curtos/), {
+      target: { value: "retenção de clientes" },
+    });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /Iniciar pesquisa e buscar metadados/ }));
+
+    expect(
+      await screen.findByText(/O OpenAlex limitou temporariamente as consultas/),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Estado da consulta: não concluída.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Execução atual")).toHaveTextContent(RUN_ID);
+    expect(screen.queryByText(/lease liberado após a consulta/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Tentar a busca novamente/ })).toBeEnabled();
+    expect(mocks.start).toHaveBeenCalledTimes(1);
+    expect(mocks.search).toHaveBeenCalledTimes(1);
   });
 
   it("clears the previous account's query, run and results on session change", async () => {

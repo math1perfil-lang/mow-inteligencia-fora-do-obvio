@@ -144,6 +144,10 @@ export const searchOpenAlexForRun = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     setPrivateNoStoreHeaders();
     const { actorId, rpc, runs } = getVerifiedContext(context);
+    const apiKey = process.env["OPENALEX_API_KEY"]?.trim();
+    if (!apiKey) {
+      throw new Error(toOpenAlexFailureToken({ code: "provider_not_configured" }));
+    }
     const boundRun = runs.find((run) => run.id === data.researchRunId);
     if (!boundRun || boundRun.question !== data.query) {
       throw new Error("A busca deve corresponder aos termos curtos registrados na execução GKI.");
@@ -187,7 +191,7 @@ export const searchOpenAlexForRun = createServerFn({ method: "POST" })
           );
         }
       },
-      openAlexClient: new OpenAlexClient(),
+      openAlexClient: new OpenAlexClient({ apiKey }),
     });
 
     try {

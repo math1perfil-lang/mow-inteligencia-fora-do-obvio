@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { searchOpenAlexForRun, startOpenAlexResearchRun } from "@/lib/mow-gki/openalex.functions";
-import { getOpenAlexFailureNotice } from "@/lib/mow-gki/openalex-error-messages";
+import {
+  getOpenAlexFailureCode,
+  getOpenAlexFailureNotice,
+  getOpenAlexRetryAfterSeconds,
+  type OpenAlexFailureCode,
+} from "@/lib/mow-gki/openalex-error-messages";
 import type { OpenAlexWorksPage } from "@/lib/mow-gki/server/openalex-client";
 import type { OpenAlexResearchRunSummary } from "@/lib/mow-gki/research-run.schema";
 import { useOpenAlexOwnerAccess } from "@/lib/mow-gki/use-openalex-owner-access";
@@ -24,6 +29,8 @@ type SearchState = {
   queryStatus: "idle" | "searching" | "completed" | "failed";
   busy: boolean;
   notice: string;
+  failureCode: OpenAlexFailureCode | null;
+  retryAvailableAt: number | null;
 };
 
 const openAlexRouteSearchSchema = z.object({ briefId: z.string().uuid().optional() }).catch({});
@@ -40,6 +47,8 @@ function emptySearch(version: number): SearchState {
     queryStatus: "idle",
     busy: false,
     notice: "",
+    failureCode: null,
+    retryAvailableAt: null,
   };
 }
 
@@ -64,10 +73,26 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
   const access = useOpenAlexOwnerAccess();
   const [draftState, setDraftState] = useState(() => emptyDraft(0, initialBriefId));
   const [searchState, setSearchState] = useState(() => emptySearch(0));
+  const [clock, setClock] = useState(() => Date.now());
   const currentUserId = useRef<string | null>(null);
   const draft =
     draftState.version === access.version ? draftState : emptyDraft(access.version, initialBriefId);
   const search = searchState.version === access.version ? searchState : emptySearch(access.version);
+  const retryWaitSeconds =
+    search.retryAvailableAt === null
+      ? 0
+      : Math.max(0, Math.ceil((search.retryAvailableAt - clock) / 1000));
+  const retryBlocked =
+    search.failureCode === "provider_not_configured" ||
+    search.failureCode === "budget_exhausted" ||
+    search.failureCode === "rate_limit_unknown" ||
+    search.failureCode === "plan_required";
+
+  useEffect(() => {
+    if (search.retryAvailableAt === null) return;
+    const timer = window.setInterval(() => setClock(Date.now()), 250);
+    return () => window.clearInterval(timer);
+  }, [search.retryAvailableAt]);
 
   useEffect(() => {
     currentUserId.current = access.userId;
@@ -98,6 +123,8 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
         page: null,
         queryStatus: "searching",
         notice: "",
+        failureCode: null,
+        retryAvailableAt: null,
         version: ownerVersion,
       };
     });
@@ -118,16 +145,23 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
           page: result,
           queryStatus: "completed",
           notice: "Resultados bibliográficos temporários; nada foi salvo como fonte curada.",
+          failureCode: null,
+          retryAvailableAt: null,
         };
       });
     } catch (error) {
       if (currentUserId.current !== ownerId) return;
       setSearchState((current) => {
         if (current.version !== ownerVersion) return current;
+        const failureCode = getOpenAlexFailureCode(error);
+        const retryAfterSeconds = getOpenAlexRetryAfterSeconds(error);
+        const cooldownSeconds = failureCode === "rate_limited" ? (retryAfterSeconds ?? 2) : null;
         return {
           ...current,
           queryStatus: "failed",
           notice: getOpenAlexFailureNotice(error),
+          failureCode,
+          retryAvailableAt: cooldownSeconds === null ? null : Date.now() + cooldownSeconds * 1000,
         };
       });
     }
@@ -351,11 +385,21 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
               <Button
                 type="button"
                 variant="outline"
-                disabled={search.busy || !draft.confirmTopicOnly || !draft.query.trim()}
+                disabled={
+                  search.busy ||
+                  !draft.confirmTopicOnly ||
+                  !draft.query.trim() ||
+                  retryBlocked ||
+                  retryWaitSeconds > 0
+                }
                 onClick={handleRetrySearch}
               >
                 <Search className="mr-2 size-4" aria-hidden="true" />
-                Tentar a busca novamente
+                {retryBlocked
+                  ? "Aguardando ação da equipe MOW"
+                  : retryWaitSeconds > 0
+                    ? `Tentar novamente em ${retryWaitSeconds}s`
+                    : "Tentar a busca novamente"}
               </Button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -11,11 +11,15 @@ const mocks = vi.hoisted(() => ({
   createFactoryInvite: vi.fn(),
   getFactoryBriefReview: vi.fn(),
   listFactoryInbox: vi.fn(),
+  navigate: vi.fn(),
   revokeFactoryInvite: vi.fn(),
   updateFactoryBriefStatus: vi.fn(),
+  verifyOpenAlexOwner: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase", () => ({ getSupabase: mocks.getSupabase }));
+
+vi.mock("@tanstack/react-router", () => ({ useNavigate: () => mocks.navigate }));
 
 vi.mock("@/lib/method-factory/workflow.functions", () => ({
   checkFactoryOperatorAccess: mocks.checkFactoryOperatorAccess,
@@ -24,6 +28,10 @@ vi.mock("@/lib/method-factory/workflow.functions", () => ({
   listFactoryInbox: mocks.listFactoryInbox,
   revokeFactoryInvite: mocks.revokeFactoryInvite,
   updateFactoryBriefStatus: mocks.updateFactoryBriefStatus,
+}));
+
+vi.mock("@/lib/mow-gki/openalex.functions", () => ({
+  verifyOpenAlexOwner: mocks.verifyOpenAlexOwner,
 }));
 
 import { FactoryReview } from "./FactoryReview";
@@ -35,6 +43,7 @@ beforeEach(() => {
   });
   mocks.getSupabase.mockReturnValue({ auth: mocks.auth });
   mocks.checkFactoryOperatorAccess.mockResolvedValue({ allowed: true });
+  mocks.verifyOpenAlexOwner.mockResolvedValue({ activeOwner: true });
 });
 
 afterEach(() => {
@@ -267,5 +276,108 @@ describe("FactoryReview access boundary", () => {
     expect(screen.getByRole("button", { name: "Marcar em revisão" })).toBeInTheDocument();
     expect(mocks.getFactoryBriefReview).toHaveBeenCalledWith({ data: { id: briefId } });
     expect(mocks.updateFactoryBriefStatus).not.toHaveBeenCalled();
+  });
+
+  it("marks a received brief in review and opens its linked research step", async () => {
+    const briefId = "00000000-0000-4000-8000-000000000011";
+    mocks.auth.getSession.mockResolvedValue({
+      data: { session: { user: { id: "synthetic-user", email: "staff@example.invalid" } } },
+    });
+    mocks.listFactoryInbox.mockResolvedValue([
+      {
+        id: briefId,
+        status: "received",
+        submittedAt: "2026-11-23T00:00:00.000Z",
+        company: "Empresa sintética",
+        industry: "",
+        relationshipType: "external_pilot",
+        pains: [],
+        analysisStatus: null,
+        analysisRunId: null,
+        methodVersionId: null,
+      },
+    ]);
+    mocks.getFactoryBriefReview.mockResolvedValue({
+      id: briefId,
+      status: "received",
+      submittedAt: "2026-11-23T00:00:00.000Z",
+      payload: {},
+      pains: [],
+      analysis: null,
+      analysisStatus: null,
+      analysisRunId: null,
+      methodVersionId: null,
+      inputDigest: null,
+    });
+    mocks.updateFactoryBriefStatus.mockResolvedValue({ updated: true });
+
+    render(<FactoryReview />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Iniciar pesquisa do método" }));
+
+    await waitFor(() =>
+      expect(mocks.updateFactoryBriefStatus).toHaveBeenCalledWith({
+        data: { briefId, status: "in_review" },
+      }),
+    );
+    await waitFor(() =>
+      expect(mocks.navigate).toHaveBeenCalledWith({
+        to: "/method-factory/openalex",
+        search: { briefId },
+      }),
+    );
+    expect(mocks.verifyOpenAlexOwner).toHaveBeenCalledWith({ data: {} });
+    const [ownerVerificationOrder] = mocks.verifyOpenAlexOwner.mock.invocationCallOrder;
+    const [statusUpdateOrder] = mocks.updateFactoryBriefStatus.mock.invocationCallOrder;
+    if (ownerVerificationOrder === undefined || statusUpdateOrder === undefined) {
+      throw new Error("Expected owner verification and status update calls");
+    }
+    expect(ownerVerificationOrder).toBeLessThan(statusUpdateOrder);
+  });
+
+  it("does not change the brief status when the active-owner gate denies research", async () => {
+    const briefId = "00000000-0000-4000-8000-000000000012";
+    mocks.auth.getSession.mockResolvedValue({
+      data: { session: { user: { id: "synthetic-user", email: "staff@example.invalid" } } },
+    });
+    mocks.listFactoryInbox.mockResolvedValue([
+      {
+        id: briefId,
+        status: "received",
+        submittedAt: "2026-11-23T00:00:00.000Z",
+        company: "Empresa sintética",
+        industry: "",
+        relationshipType: "external_pilot",
+        pains: [],
+        analysisStatus: null,
+        analysisRunId: null,
+        methodVersionId: null,
+      },
+    ]);
+    mocks.getFactoryBriefReview.mockResolvedValue({
+      id: briefId,
+      status: "received",
+      submittedAt: "2026-11-23T00:00:00.000Z",
+      payload: {},
+      pains: [],
+      analysis: null,
+      analysisStatus: null,
+      analysisRunId: null,
+      methodVersionId: null,
+      inputDigest: null,
+    });
+    mocks.verifyOpenAlexOwner.mockRejectedValue(new Error("No active owner"));
+
+    render(<FactoryReview />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Iniciar pesquisa do método" }));
+
+    expect(
+      await screen.findByText(
+        "A pesquisa exige owner ativo da Factory. O status do briefing não foi alterado.",
+      ),
+    ).toBeInTheDocument();
+    expect(mocks.updateFactoryBriefStatus).not.toHaveBeenCalled();
+    expect(mocks.navigate).not.toHaveBeenCalled();
   });
 });

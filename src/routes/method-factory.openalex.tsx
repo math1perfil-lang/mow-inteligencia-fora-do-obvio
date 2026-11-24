@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { BookOpenCheck, LoaderCircle, Search, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,10 @@ type SearchState = {
   notice: string;
 };
 
-function emptyDraft(version: number): DraftState {
-  return { version, sourceBriefId: "", query: "", confirmTopicOnly: false };
+const openAlexRouteSearchSchema = z.object({ briefId: z.string().uuid().optional() }).catch({});
+
+function emptyDraft(version: number, sourceBriefId = ""): DraftState {
+  return { version, sourceBriefId, query: "", confirmTopicOnly: false };
 }
 
 function emptySearch(version: number): SearchState {
@@ -32,6 +35,7 @@ function emptySearch(version: number): SearchState {
 }
 
 export const Route = createFileRoute("/method-factory/openalex")({
+  validateSearch: openAlexRouteSearchSchema,
   head: () => ({
     meta: [
       { title: "OpenAlex · MOW Method Factory" },
@@ -39,26 +43,34 @@ export const Route = createFileRoute("/method-factory/openalex")({
       { name: "referrer", content: "no-referrer" },
     ],
   }),
-  component: OpenAlexDiscoveryPage,
+  component: OpenAlexRoute,
 });
 
-export function OpenAlexDiscoveryPage() {
+function OpenAlexRoute() {
+  const { briefId } = Route.useSearch();
+  return <OpenAlexDiscoveryPage initialBriefId={briefId ?? ""} />;
+}
+
+export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?: string }) {
   const access = useOpenAlexOwnerAccess();
-  const [draftState, setDraftState] = useState(() => emptyDraft(0));
+  const [draftState, setDraftState] = useState(() => emptyDraft(0, initialBriefId));
   const [searchState, setSearchState] = useState(() => emptySearch(0));
   const currentUserId = useRef<string | null>(null);
-  const draft = draftState.version === access.version ? draftState : emptyDraft(access.version);
+  const draft =
+    draftState.version === access.version ? draftState : emptyDraft(access.version, initialBriefId);
   const search = searchState.version === access.version ? searchState : emptySearch(access.version);
 
   useEffect(() => {
     currentUserId.current = access.userId;
-    setDraftState(emptyDraft(access.version));
+    setDraftState(emptyDraft(access.version, initialBriefId));
     setSearchState(emptySearch(access.version));
-  }, [access.userId, access.version]);
+  }, [access.userId, access.version, initialBriefId]);
 
   function updateDraft(patch: Partial<Omit<DraftState, "version">>) {
     setDraftState((current) => ({
-      ...(current.version === access.version ? current : emptyDraft(access.version)),
+      ...(current.version === access.version
+        ? current
+        : emptyDraft(access.version, initialBriefId)),
       ...patch,
       version: access.version,
     }));

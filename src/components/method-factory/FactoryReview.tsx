@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Copy, LogOut, RefreshCw } from "lucide-react";
@@ -15,6 +16,7 @@ import {
   type FactoryBriefReview as ReviewData,
   type FactoryInboxItem,
 } from "@/lib/method-factory/workflow.functions";
+import { verifyOpenAlexOwner } from "@/lib/mow-gki/openalex.functions";
 import { BRIEF_STEPS, parseProblemEntries, visibleFields } from "@/lib/method-factory/brief-schema";
 
 type RelationshipType = "internal" | "related_company" | "external_pilot" | "client";
@@ -62,6 +64,7 @@ export function FactoryReview() {
   const [invites, setInvites] = useState<InviteRecord[]>([]);
   const [notice, setNotice] = useState("");
   const [actionBusy, setActionBusy] = useState(false);
+  const navigate = useNavigate();
   const activeSessionUserId = useRef<string | null>(null);
   const authEventVersion = useRef(0);
   const sessionUserId = session?.user.id ?? null;
@@ -429,6 +432,57 @@ export function FactoryReview() {
     }
   }
 
+  async function startMethodResearch(briefId: string) {
+    const requestUserId = activeSessionUserId.current;
+    if (
+      !requestUserId ||
+      currentOperatorAccess !== "allowed" ||
+      !review ||
+      review.id !== briefId ||
+      actionBusy
+    ) {
+      return;
+    }
+    if (!["received", "triage_pending", "in_review"].includes(review.status)) {
+      setNotice("Este briefing não está em um estado que permita iniciar a pesquisa.");
+      return;
+    }
+
+    setActionBusy(true);
+    setNotice("");
+    let ownerVerified = false;
+    try {
+      await verifyOpenAlexOwner({ data: {} });
+      ownerVerified = true;
+      if (activeSessionUserId.current !== requestUserId) return;
+
+      if (review.status !== "in_review") {
+        const result = await updateFactoryBriefStatus({
+          data: { briefId, status: "in_review" },
+        });
+        if (activeSessionUserId.current !== requestUserId) return;
+        if (!result.updated) {
+          setNotice(
+            "Não foi possível marcar o briefing como em revisão. Atualize a caixa e confira o status antes de tentar novamente.",
+          );
+          return;
+        }
+      }
+      if (activeSessionUserId.current !== requestUserId) return;
+      await navigate({ to: "/method-factory/openalex", search: { briefId } });
+    } catch {
+      if (activeSessionUserId.current === requestUserId) {
+        setNotice(
+          ownerVerified
+            ? "Não foi possível abrir a pesquisa. Tente novamente; o status do briefing permanece em revisão."
+            : "A pesquisa exige owner ativo da Factory. O status do briefing não foi alterado.",
+        );
+      }
+    } finally {
+      if (activeSessionUserId.current === requestUserId) setActionBusy(false);
+    }
+  }
+
   if (!authReady) {
     return (
       <PanelShell>
@@ -760,6 +814,7 @@ export function FactoryReview() {
               methodDraft={methodDraft}
               actionBusy={actionBusy}
               onStatus={(status) => void updateStatus(status)}
+              onStartResearch={(briefId) => void startMethodResearch(briefId)}
             />
           ) : (
             <div className="border border-dashed border-foreground/25 p-8 text-sm leading-relaxed text-muted-foreground">
@@ -780,6 +835,7 @@ function ReviewPanel({
   methodDraft,
   actionBusy,
   onStatus,
+  onStartResearch,
 }: {
   brief: FactoryInboxItem;
   review: ReviewData;
@@ -787,6 +843,7 @@ function ReviewPanel({
   methodDraft: Record<string, unknown> | null;
   actionBusy: boolean;
   onStatus: (status: ReviewStatus) => void;
+  onStartResearch: (briefId: string) => void;
 }) {
   const values = recordStrings(review.payload);
   const statusChoices: Array<{ value: ReviewStatus; label: string; description: string }> = [
@@ -889,6 +946,31 @@ function ReviewPanel({
           </p>
         </section>
       )}
+
+      <section className="border border-foreground/25 p-5" aria-labelledby="research-start-title">
+        <h3 id="research-start-title" className="text-lg font-medium">
+          Pesquisa para desenvolver um método
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Iniciar marca o briefing como “em revisão” quando necessário e abre a etapa de pesquisa
+          vinculada a ele. Na tela seguinte, a equipe informa termos temáticos curtos e confirma que
+          não está enviando o briefing integral, dados pessoais ou informação confidencial.
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Nesta etapa, o OpenAlex retorna apenas títulos e metadados temporários; isso ainda não
+          gera automaticamente um método completo. O acesso à pesquisa exige owner ativo da Factory.
+        </p>
+        <Button
+          type="button"
+          className="mt-5 min-h-12"
+          disabled={
+            actionBusy || !["received", "triage_pending", "in_review"].includes(review.status)
+          }
+          onClick={() => onStartResearch(brief.id)}
+        >
+          {actionBusy ? "Preparando pesquisa…" : "Iniciar pesquisa do método"}
+        </Button>
+      </section>
 
       <section className="border border-foreground/25 p-5" aria-labelledby="actions-title">
         <h3 id="actions-title" className="text-lg font-medium">

@@ -11,10 +11,27 @@ const OPENALEX_SELECT = [
   "language",
   "authorships",
 ].join(",");
-const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const RETRYABLE_STATUSES = new Set([500, 502, 503, 504]);
 const MAX_PAGE_SIZE = 100;
 const MAX_AUTOMATIC_RETRY_AFTER_SECONDS = 5;
 const DEFAULT_TIMEOUT_MS = 15_000;
+
+export type OpenAlexRateLimitReason =
+  | "requests_per_second"
+  | "broad_boolean_query"
+  | "wide_or_filter"
+  | "semantic_search"
+  | "new_account_pacing"
+  | "daily_budget"
+  | "plan_upgrade_required";
+
+const RETRYABLE_RATE_LIMIT_REASONS = new Set<OpenAlexRateLimitReason>([
+  "requests_per_second",
+  "broad_boolean_query",
+  "wide_or_filter",
+  "semantic_search",
+  "new_account_pacing",
+]);
 
 type JsonRecord = Record<string, unknown> & {
   id?: unknown;
@@ -61,12 +78,18 @@ export interface OpenAlexWorksPage {
 export class OpenAlexApiError extends Error {
   readonly status: number;
   readonly retryAfterSeconds: number | null;
+  readonly rateLimitReason: OpenAlexRateLimitReason | null;
 
-  constructor(status: number, retryAfterSeconds: number | null = null) {
+  constructor(
+    status: number,
+    retryAfterSeconds: number | null = null,
+    rateLimitReason: OpenAlexRateLimitReason | null = null,
+  ) {
     super(`OpenAlex API request failed with HTTP ${status}.`);
     this.name = "OpenAlexApiError";
     this.status = status;
     this.retryAfterSeconds = retryAfterSeconds;
+    this.rateLimitReason = rateLimitReason;
   }
 }
 
@@ -158,6 +181,40 @@ function parseRetryAfter(value: string | null): number | null {
   return Number.isFinite(date) ? Math.max(0, Math.ceil((date - Date.now()) / 1000)) : null;
 }
 
+function parseRateLimitReason(value: unknown): OpenAlexRateLimitReason | null {
+  if (!isRecord(value)) return null;
+
+  const reason = readString(value.reason)?.toLowerCase();
+  switch (reason) {
+    case "requests_per_second":
+    case "broad_boolean_query":
+    case "wide_or_filter":
+    case "semantic_search":
+    case "daily_budget":
+    case "plan_upgrade_required":
+      return reason;
+    case "new_account_pace":
+    case "new_account_pacing":
+      return "new_account_pacing";
+  }
+
+  const error = readString(value.error)?.toLowerCase();
+  if (error === "not_enough_credits" || error === "daily budget exceeded") {
+    return "daily_budget";
+  }
+  if (error === "plan upgrade required") return "plan_upgrade_required";
+  return null;
+}
+
+async function readRateLimitReason(response: Response): Promise<OpenAlexRateLimitReason | null> {
+  if (response.status !== 429) return null;
+  try {
+    return parseRateLimitReason(await response.clone().json());
+  } catch {
+    return null;
+  }
+}
+
 export class OpenAlexClient {
   private readonly options: OpenAlexClientOptions;
   private readonly fetchImplementation: typeof fetch;
@@ -228,17 +285,27 @@ export class OpenAlexClient {
         const apiError = new OpenAlexApiError(
           response.status,
           parseRetryAfter(response.headers.get("retry-after")),
+          await readRateLimitReason(response),
         );
+        if (response.status === 429) {
+          if (
+            !apiError.rateLimitReason ||
+            !RETRYABLE_RATE_LIMIT_REASONS.has(apiError.rateLimitReason) ||
+            attempt >= this.maxRetries
+          ) {
+            throw apiError;
+          }
+          const delaySeconds = apiError.retryAfterSeconds;
+          if (delaySeconds === null || delaySeconds > MAX_AUTOMATIC_RETRY_AFTER_SECONDS) {
+            throw apiError;
+          }
+          await this.sleep(delaySeconds * 1000);
+          continue;
+        }
         if (!RETRYABLE_STATUSES.has(response.status) || attempt >= this.maxRetries) {
           throw apiError;
         }
         const delaySeconds = apiError.retryAfterSeconds ?? 2 ** attempt;
-        if (
-          apiError.retryAfterSeconds !== null &&
-          apiError.retryAfterSeconds > MAX_AUTOMATIC_RETRY_AFTER_SECONDS
-        ) {
-          throw apiError;
-        }
         await this.sleep(Math.min(delaySeconds * 1000, 30_000));
         continue;
       }

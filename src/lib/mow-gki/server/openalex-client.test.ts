@@ -90,11 +90,16 @@ describe("OpenAlexClient", () => {
     expect(fetchImplementation).not.toHaveBeenCalled();
   });
 
-  it("retries a 429 according to Retry-After and then succeeds", async () => {
+  it("retries an identified request-rate 429 according to Retry-After and then succeeds", async () => {
     const sleep = vi.fn(async (_milliseconds: number) => undefined);
     const fetchImplementation = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(new Response("", { status: 429, headers: { "Retry-After": "2" } }))
+      .mockResolvedValueOnce(
+        jsonResponse(
+          { reason: "requests_per_second", error: "private upstream detail" },
+          { status: 429, headers: { "Retry-After": "2" } },
+        ),
+      )
       .mockResolvedValueOnce(jsonResponse({ meta: { count: 0 }, results: [] }));
     const client = new OpenAlexClient({
       apiKey: "test-secret",
@@ -113,12 +118,58 @@ describe("OpenAlexClient", () => {
     const sleep = vi.fn(async (_milliseconds: number) => undefined);
     const fetchImplementation = vi
       .fn<typeof fetch>()
-      .mockResolvedValue(new Response("", { status: 429, headers: { "Retry-After": "30" } }));
+      .mockResolvedValue(
+        jsonResponse(
+          { reason: "requests_per_second" },
+          { status: 429, headers: { "Retry-After": "30" } },
+        ),
+      );
     const client = new OpenAlexClient({ fetchImplementation, sleep });
 
     await expect(client.searchWorks("test")).rejects.toMatchObject({
       status: 429,
       retryAfterSeconds: 30,
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
+  it("does not retry a daily-budget 429 and exposes only its allowlisted reason", async () => {
+    const sleep = vi.fn(async (_milliseconds: number) => undefined);
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        jsonResponse(
+          { reason: "daily_budget", error: "private query or upstream detail" },
+          { status: 429, headers: { "Retry-After": "3600" } },
+        ),
+      );
+    const client = new OpenAlexClient({ fetchImplementation, sleep });
+
+    await expect(client.searchWorks("test")).rejects.toMatchObject({
+      status: 429,
+      retryAfterSeconds: 3600,
+      rateLimitReason: "daily_budget",
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
+  it("does not retry a 429 with an unknown reason", async () => {
+    const sleep = vi.fn(async (_milliseconds: number) => undefined);
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        jsonResponse(
+          { reason: "unrecognized_private_reason", error: "private upstream detail" },
+          { status: 429, headers: { "Retry-After": "1" } },
+        ),
+      );
+    const client = new OpenAlexClient({ fetchImplementation, sleep });
+
+    await expect(client.searchWorks("test")).rejects.toMatchObject({
+      status: 429,
+      rateLimitReason: null,
     });
     expect(fetchImplementation).toHaveBeenCalledTimes(1);
     expect(sleep).not.toHaveBeenCalled();

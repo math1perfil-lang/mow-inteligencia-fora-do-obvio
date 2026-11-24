@@ -127,8 +127,29 @@ describe("OpenAlex internal discovery page", () => {
     });
   });
 
-  it("shows a safe rate-limit notice and keeps the same execution retryable", async () => {
-    mocks.search.mockRejectedValueOnce(new Error(`${OPENALEX_FAILURE_TOKEN_PREFIX}rate_limited`));
+  it("shows a safe rate-limit notice and enforces the retry cooldown on the same execution", async () => {
+    mocks.search.mockRejectedValueOnce(new Error(`${OPENALEX_FAILURE_TOKEN_PREFIX}rate_limited:2`));
+    render(<OpenAlexDiscoveryPage initialBriefId={BRIEF_ID} />);
+
+    fireEvent.change(screen.getByLabelText(/Termos temáticos curtos/), {
+      target: { value: "retenção de clientes" },
+    });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /Iniciar pesquisa e buscar metadados/ }));
+
+    expect(await screen.findByText(/pausa de 2 segundos/)).toBeInTheDocument();
+    expect(screen.getByText("Estado da consulta: não concluída.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Execução atual")).toHaveTextContent(RUN_ID);
+    expect(screen.queryByText(/lease liberado após a consulta/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Tentar novamente em \d+s/ })).toBeDisabled();
+    expect(mocks.start).toHaveBeenCalledTimes(1);
+    expect(mocks.search).toHaveBeenCalledTimes(1);
+  });
+
+  it("blocks retry when OpenAlex configuration needs action by the MOW team", async () => {
+    mocks.search.mockRejectedValueOnce(
+      new Error(`${OPENALEX_FAILURE_TOKEN_PREFIX}provider_not_configured`),
+    );
     render(<OpenAlexDiscoveryPage initialBriefId={BRIEF_ID} />);
 
     fireEvent.change(screen.getByLabelText(/Termos temáticos curtos/), {
@@ -138,12 +159,9 @@ describe("OpenAlex internal discovery page", () => {
     fireEvent.click(screen.getByRole("button", { name: /Iniciar pesquisa e buscar metadados/ }));
 
     expect(
-      await screen.findByText(/O OpenAlex limitou temporariamente as consultas/),
+      await screen.findByText(/chave OpenAlex não está configurada no servidor/),
     ).toBeInTheDocument();
-    expect(screen.getByText("Estado da consulta: não concluída.")).toBeInTheDocument();
-    expect(screen.getByLabelText("Execução atual")).toHaveTextContent(RUN_ID);
-    expect(screen.queryByText(/lease liberado após a consulta/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Tentar a busca novamente/ })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Aguardando ação da equipe MOW/ })).toBeDisabled();
     expect(mocks.start).toHaveBeenCalledTimes(1);
     expect(mocks.search).toHaveBeenCalledTimes(1);
   });

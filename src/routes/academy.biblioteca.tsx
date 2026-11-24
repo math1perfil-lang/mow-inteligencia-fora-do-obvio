@@ -39,7 +39,7 @@ function Library() {
     return (
       <p>
         Faça o{" "}
-        <Link to="/academy/diagnostico" className="underline underline-offset-4">
+        <Link to="/academy/start" className="underline underline-offset-4">
           diagnóstico
         </Link>{" "}
         para usar a biblioteca.
@@ -261,7 +261,7 @@ function Library() {
         </div>
         {list.length === 0 ? (
           <p className="mt-6 text-sm text-muted-foreground">
-            Nenhum prompt aqui ainda. Crie o primeiro no Módulo 0 ou clique em “Novo prompt”.
+            Nenhum prompt aqui ainda. Crie o primeiro no Módulo Start ou clique em “Novo prompt”.
           </p>
         ) : (
           <ul className="mt-6 space-y-3">

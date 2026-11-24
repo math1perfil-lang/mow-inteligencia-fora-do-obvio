@@ -32,7 +32,43 @@ export interface SavedPrompt {
   status: PromptStatus;
 }
 
+export interface StartState {
+  /** Etapa atual (0 a 11) e a mais avançada já liberada. */
+  step: number;
+  max: number;
+  diag: Record<string, string | string[]>;
+  area?: AreaId | undefined;
+  /** id do fundamento -> opção marcada. */
+  fund: Record<string, number>;
+  /** índice da situação -> opção marcada. */
+  mini: Record<number, number>;
+  task: string;
+  promptText: string;
+  evalTotal?: number | undefined;
+  evalTier?: string | undefined;
+  perfil: string;
+  profileSaved: boolean;
+  checks: Record<number, boolean>;
+  done: boolean;
+  doneAt?: string | undefined;
+}
+
+export const EMPTY_START: StartState = {
+  step: 0,
+  max: 0,
+  diag: {},
+  fund: {},
+  mini: {},
+  task: "",
+  promptText: "",
+  perfil: "",
+  profileSaved: false,
+  checks: {},
+  done: false,
+};
+
 export interface AcademyState {
+  start?: StartState;
   profile?: Profile;
   /** taskId -> pontos (0 a 100) */
   done: Record<string, number>;
@@ -117,6 +153,19 @@ export function useAcademy() {
 
 export function moduleProgress(n: number, s: AcademyState) {
   const m = MODULES[n]!;
+  if (n === 0) {
+    const st = s.start ?? EMPTY_START;
+    const percent = st.done ? 100 : Math.round((Math.min(st.max, 11) / 12) * 100);
+    return {
+      tasks: 0,
+      checks: 0,
+      deliverable: st.done,
+      total: 12,
+      doneUnits: st.done ? 12 : Math.min(st.max, 11),
+      complete: st.done,
+      percent,
+    };
+  }
   const tasks = m.tasks.filter((t) => (s.done[t.id] ?? 0) > 0).length;
   const checks = m.checklist.filter((_, i) => s.checks[`${n}:${i}`]).length;
   const deliverable = (s.deliverables[n] ?? "").trim().length >= 60;
@@ -134,6 +183,7 @@ export function moduleProgress(n: number, s: AcademyState) {
 }
 
 export function isUnlocked(n: number, s: AcademyState) {
+  if (n === 0) return true;
   if (!s.profile) return false;
   return n === 0 || moduleProgress(n - 1, s).complete;
 }
@@ -158,7 +208,7 @@ export function certification(s: AcademyState) {
   const approved = s.prompts.filter((p) => p.status === "aprovado");
   const withResult = approved.filter((p) => p.result.trim().length >= 20);
   const rules = [
-    { label: "Módulo 0 e as 8 semanas concluídos", ok: o.completed === MODULES.length },
+    { label: "Módulo Start e as 8 semanas concluídos", ok: o.completed === MODULES.length },
     {
       label: `Pelo menos ${MIN_APPROVED_PROMPTS} prompts aprovados na biblioteca (${approved.length} agora)`,
       ok: approved.length >= MIN_APPROVED_PROMPTS,

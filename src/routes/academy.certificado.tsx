@@ -15,7 +15,7 @@ function Certificate() {
     return (
       <p>
         Faça o{" "}
-        <Link to="/academy/diagnostico" className="underline underline-offset-4">
+        <Link to="/academy/start" className="underline underline-offset-4">
           diagnóstico
         </Link>{" "}
         para iniciar sua trilha.

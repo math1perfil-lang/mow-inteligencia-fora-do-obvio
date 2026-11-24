@@ -109,6 +109,21 @@ describe("OpenAlexClient", () => {
     expect(page.results).toEqual([]);
   });
 
+  it("returns a long Retry-After immediately instead of holding the search lease", async () => {
+    const sleep = vi.fn(async (_milliseconds: number) => undefined);
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response("", { status: 429, headers: { "Retry-After": "30" } }));
+    const client = new OpenAlexClient({ fetchImplementation, sleep });
+
+    await expect(client.searchWorks("test")).rejects.toMatchObject({
+      status: 429,
+      retryAfterSeconds: 30,
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
   it("surfaces non-retryable API status without leaking the response body", async () => {
     const fetchImplementation = vi
       .fn<typeof fetch>()

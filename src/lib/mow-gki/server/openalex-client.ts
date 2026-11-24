@@ -13,6 +13,7 @@ const OPENALEX_SELECT = [
 ].join(",");
 const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
 const MAX_PAGE_SIZE = 100;
+const MAX_AUTOMATIC_RETRY_AFTER_SECONDS = 5;
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 type JsonRecord = Record<string, unknown> & {
@@ -232,6 +233,12 @@ export class OpenAlexClient {
           throw apiError;
         }
         const delaySeconds = apiError.retryAfterSeconds ?? 2 ** attempt;
+        if (
+          apiError.retryAfterSeconds !== null &&
+          apiError.retryAfterSeconds > MAX_AUTOMATIC_RETRY_AFTER_SECONDS
+        ) {
+          throw apiError;
+        }
         await this.sleep(Math.min(delaySeconds * 1000, 30_000));
         continue;
       }

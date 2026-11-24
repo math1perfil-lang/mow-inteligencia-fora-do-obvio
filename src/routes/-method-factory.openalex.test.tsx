@@ -80,11 +80,9 @@ describe("OpenAlex internal discovery page", () => {
   });
 
   it("starts a brief-bound run and displays only temporary bibliographic metadata", async () => {
-    render(<OpenAlexDiscoveryPage />);
+    render(<OpenAlexDiscoveryPage initialBriefId={BRIEF_ID} />);
 
-    fireEvent.change(screen.getByLabelText(/UUID do briefing/), {
-      target: { value: BRIEF_ID },
-    });
+    expect(screen.getByLabelText(/UUID do briefing/)).toHaveValue(BRIEF_ID);
     fireEvent.change(screen.getByLabelText(/Termos temáticos curtos/), {
       target: { value: "retenção de clientes" },
     });

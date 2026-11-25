@@ -1,11 +1,18 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { Module1 } from "@/components/academy/Module1";
+import { RhModule1 } from "@/components/academy/RhModule1";
 import { GovernanceRules } from "@/components/academy/GovernanceRules";
 import { TaskRunner } from "@/components/academy/TaskRunner";
 import { Textarea } from "@/components/ui/textarea";
 import { AREA_BY_ID } from "@/lib/academy/areas";
 import { MODULES } from "@/lib/academy/course";
-import { isUnlocked, moduleProgress, updateAcademy, useAcademy } from "@/lib/academy/store";
+import {
+  effectiveArea,
+  isUnlocked,
+  moduleProgress,
+  updateAcademy,
+  useAcademy,
+} from "@/lib/academy/store";
 
 export const Route = createFileRoute("/academy/semana/$n")({ component: WeekPage });
 
@@ -49,7 +56,7 @@ function WeekPage() {
       </div>
     );
   }
-  if (idx === 1) return <Module1 />;
+  if (idx === 1) return effectiveArea(state) === "rh" ? <RhModule1 /> : <Module1 />;
   const area = AREA_BY_ID[state.profile.area];
   const pr = moduleProgress(idx, state);
   const nextOpen = idx < MODULES.length - 1;

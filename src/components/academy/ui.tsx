@@ -88,3 +88,55 @@ export function Choice({
     </button>
   );
 }
+
+export function Field({
+  id,
+  label,
+  value,
+  onChange,
+  rows = 3,
+  hint,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  rows?: number;
+  hint?: string | undefined;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="text-sm font-medium">
+        {label}
+      </label>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      <textarea
+        id={id}
+        value={value}
+        rows={rows}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 w-full px-3 py-2 text-[15px] leading-relaxed"
+      />
+    </div>
+  );
+}
+
+export function Result({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+  return (
+    <p role="status" className="text-sm leading-relaxed text-muted-foreground">
+      <strong className={ok ? "text-[#5fd6a5]" : "text-[#ff9a9a]"}>
+        {ok ? "✓ Correto. " : "✗ Ainda não. "}
+      </strong>
+      {children}
+    </p>
+  );
+}
+
+/** Selo exibido em cada atividade que usa o caso fictício. */
+export function Selo({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-[var(--ac-accent)]/50 bg-[var(--ac-accent)]/10 px-3 py-1 text-xs">
+      {children}
+    </span>
+  );
+}

@@ -3,6 +3,7 @@ import type { AreaId } from "./areas";
 import { AREA_BY_ID } from "./areas";
 import { MODULES } from "./course";
 import { m1Progress, type M1State } from "./modulo1-logic";
+import { rhProgress, type RhState } from "./rh1-logic";
 
 export type Level = "iniciante" | "intermediario" | "avancado";
 export type PromptStatus = "rascunho" | "em teste" | "aprovado" | "arquivado";
@@ -71,6 +72,8 @@ export const EMPTY_START: StartState = {
 export interface AcademyState {
   start?: StartState;
   m1?: M1State;
+  /** Trilha RH e Gestão de Pessoas — Módulo 1 (namespace próprio, separado do Módulo 1 genérico). */
+  rh1?: RhState;
   profile?: Profile;
   /** taskId -> pontos (0 a 100) */
   done: Record<string, number>;
@@ -158,8 +161,25 @@ export function useAcademy() {
 
 /* ------------------------------ progresso ------------------------------ */
 
+/** Trilha efetiva do aluno: troca explícita no Módulo 1, perfil ou escolha no Módulo Start. */
+export function effectiveArea(s: AcademyState): AreaId | undefined {
+  return s.m1?.areaOverride ?? s.profile?.area ?? s.start?.area;
+}
+
 export function moduleProgress(n: number, s: AcademyState) {
   const m = MODULES[n]!;
+  if (n === 1 && effectiveArea(s) === "rh") {
+    const p = rhProgress(s.rh1);
+    return {
+      tasks: 0,
+      checks: 0,
+      deliverable: p.complete,
+      total: 8,
+      doneUnits: p.doneUnits,
+      complete: p.complete,
+      percent: p.percent,
+    };
+  }
   if (n === 1) {
     const p = m1Progress(s.m1, s.profile?.area);
     return {

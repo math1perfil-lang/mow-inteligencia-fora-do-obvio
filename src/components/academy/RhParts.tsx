@@ -187,6 +187,11 @@ export function GuiadoErros({
   return (
     <div className="ac-glass space-y-4 p-5">
       <p className="text-base font-medium">{titulo}</p>
+      <p className="text-sm text-muted-foreground">
+        Abaixo está uma resposta de IA com defeitos. Leia com atenção e marque tudo o que você
+        considera um problema. Cuidado: algumas opções não são problemas. Depois clique em conferir
+        para ver o resultado.
+      </p>
       <Selo>{RH_AVISO_FICCAO}</Selo>
       <blockquote className="ac-code text-[14.5px] leading-relaxed">“{inadequada}”</blockquote>
       <fieldset>
@@ -355,10 +360,20 @@ export function TaskLab({
           {STATUS_LABEL[status]}
         </span>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Missão: {task.missao} Fonte: {task.fonte}. Não envie dados reais: a prática usa só o caso
-        fictício.
-      </p>
+      <div className="ac-glass space-y-2 p-5 text-[15px]">
+        <p>
+          <strong>Sua missão:</strong> {task.missao}
+        </p>
+        <p>
+          <strong>Como fazer:</strong> (1) leia a fonte {task.fonte} acima; (2) preencha os campos
+          do prompt abaixo, que é a instrução que você daria à IA; (3) escreva a entrega que espera
+          receber e as pendências que um humano precisa confirmar; (4) faça a autoavaliação com a
+          rubrica. Se travar, peça uma dica.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Use apenas o caso fictício: não coloque dados reais de pessoas.
+        </p>
+      </div>
 
       <div className="ac-glass space-y-4 p-5">
         <div className="flex flex-wrap items-center gap-2">
@@ -564,6 +579,11 @@ function SelfEval({
     <div className="ac-glass space-y-4 p-5">
       <div>
         <p className="text-sm font-medium">Autoavaliação guiada — {task.codigo}</p>
+        <p className="text-sm text-muted-foreground">
+          Agora avalie o seu próprio trabalho. Para cada critério, dê uma nota de 0 a 4 comparando o
+          seu prompt e a sua entrega com a descrição do critério. Seja honesto(a): a nota é só para
+          você.
+        </p>
         <p className="text-xs text-muted-foreground">
           {MSG.semIa} {MSG.avaliacaoAviso}
         </p>

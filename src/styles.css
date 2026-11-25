@@ -778,3 +778,14 @@
 @media (prefers-reduced-motion: reduce) {
   .ac-root *, .ac-root *::before, .ac-root *::after { animation: none !important; transition: none !important; }
 }
+
+/* Academy: legenda de fieldset dentro de caixa de vidro não deve sobrepor a borda */
+.ac-root fieldset.ac-glass > legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 0.75rem;
+}
+.ac-root fieldset.ac-glass > legend + * {
+  clear: both;
+}

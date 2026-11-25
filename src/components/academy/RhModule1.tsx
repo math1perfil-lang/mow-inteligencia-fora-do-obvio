@@ -276,15 +276,39 @@ export function RhModule1() {
           </ol>
           <p className="mt-3 text-sm text-muted-foreground">{MAPA_NOTA}</p>
         </div>
-        <h3 className="text-xl font-medium">Atividade: classifique seis pedidos</h3>
+        <h3 className="text-xl font-medium">
+          Atividade: decida como a IA pode (ou não) ajudar em seis pedidos de colegas
+        </h3>
+        <div className="ac-glass space-y-2 p-5 text-[15px]">
+          <p>
+            <strong>Situação:</strong> você trabalha no RH da {HORIZONTE.nome}. Colegas e gestores
+            costumam pedir ajuda para tarefas do dia a dia, e você está avaliando se cada pedido
+            pode ser feito com apoio de IA.
+          </p>
+          <p>
+            <strong>O que fazer:</strong> leia cada pedido abaixo e escolha a opção que melhor
+            descreve como a IA deve (ou não deve) ser usada nele. Use o mapa funcional acima como
+            referência.
+          </p>
+          <p>
+            <strong>O que você ganha:</strong> ao escolher, o sistema mostra na hora se acertou e
+            explica o motivo. Você pode trocar a resposta quantas vezes quiser.
+          </p>
+        </div>
         <div className="space-y-5">
           {U1_PEDIDOS.map((it, i) => {
             const v = s.u1[i];
             return (
               <fieldset key={it.texto} className="ac-glass p-5">
-                <legend className="px-1 text-base font-medium">
-                  {String.fromCharCode(65 + i)}. “{it.texto}”
+                <legend className="text-base font-medium">
+                  <span className="block text-xs uppercase tracking-wide text-muted-foreground">
+                    Pedido {String.fromCharCode(65 + i)} · um colega pede ao RH:
+                  </span>
+                  “{it.texto}”
                 </legend>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Como a IA deve ser usada neste pedido?
+                </p>
                 <div className="mt-3 grid gap-2">
                   {U1_OPCOES.map((o, oi) => (
                     <Choice
@@ -316,9 +340,14 @@ export function RhModule1() {
             {U1_FEEDBACK}
           </p>
         )}
-        <h3 className="text-xl font-medium">Entrega: mapa com três oportunidades</h3>
+        <h3 className="text-xl font-medium">
+          Entrega: monte seu mapa com três oportunidades de usar IA no RH
+        </h3>
         <p className="text-sm text-muted-foreground">
-          Para cada oportunidade: tarefa, fonte necessária, saída, risco e aprovador humano.
+          Agora é com você. Pense em três tarefas do RH em que a IA poderia ajudar como apoio (use o
+          caso da {HORIZONTE.nome} ou a sua realidade, sem dados pessoais reais). Para cada uma,
+          preencha: qual é a tarefa, que fonte oficial ela exige, o que a IA vai produzir, o risco
+          se houver erro e quem, entre as pessoas, aprova o resultado.
         </p>
         <div className="grid gap-5 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
@@ -352,7 +381,12 @@ export function RhModule1() {
       <Panel eyebrow="Unidade 2" title={RH_UNITS[1]!.title}>
         {unitIntro(1, U2_TEXTO)}
         <p className="ac-glass p-4 text-sm">{U2_NOTA_JURIDICA}</p>
-        <h3 className="text-xl font-medium">Atividade A: dados e classificação</h3>
+        <h3 className="text-xl font-medium">Atividade A: que tipo de dado é este?</h3>
+        <p className="text-sm text-muted-foreground">
+          Para cada situação abaixo, escolha a classificação mais adequada do dado e veja o
+          comentário. Antes de colocar qualquer informação em uma IA, você precisa saber o que ela
+          é.
+        </p>
         <div className="space-y-5">
           {U2A_ITENS.map((it, i) => {
             const v = s.u2a[i];
@@ -385,12 +419,23 @@ export function RhModule1() {
             );
           })}
         </div>
-        <h3 className="text-xl font-medium">Atividade B: detecte problemas na requisição F1</h3>
+        <h3 className="text-xl font-medium">
+          Atividade B: encontre os problemas na requisição de vaga (F1)
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Leia a requisição abaixo como se ela tivesse chegado ao seu e-mail. Responda às perguntas
+          apontando o que está faltando ou o que não deveria estar ali. Depois de responder, compare
+          com a referência e faça sua autoconferência.
+        </p>
         <FonteCard id="F1" open />
         {U2B.map((q) => (
           <LivreBox key={q.id} def={q} state={s.livres[q.id]} patch={patch} />
         ))}
-        <h3 className="text-xl font-medium">Checkpoint: três limites</h3>
+        <h3 className="text-xl font-medium">Checkpoint: escreva três limites de uso da IA</h3>
+        <p className="text-sm text-muted-foreground">
+          Para fechar a unidade, escreva três regras suas sobre o que a IA não deve fazer no RH.
+          Veja o modelo abaixo.
+        </p>
         <p className="text-sm text-muted-foreground">
           Modelo: “{LIMITE_MODELO}” Exemplos aceitáveis: {LIMITE_EXEMPLOS.join("; ")}.
         </p>
@@ -443,8 +488,14 @@ export function RhModule1() {
           </p>
         </div>
         <CodeBlock label="Template de prompt RH" text={TEMPLATE_TEXTO} />
-        <h3 className="text-xl font-medium">Atividade: complete o briefing</h3>
-        <p className="text-sm text-muted-foreground">Demanda: {U3_DEMANDA}</p>
+        <h3 className="text-xl font-medium">
+          Atividade: preencha o briefing antes de pedir algo à IA
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Um bom pedido começa por um briefing: você organiza o que precisa antes de escrever o
+          prompt. Leia a demanda e a fonte e preencha cada campo com suas palavras.
+        </p>
+        <p className="text-sm text-muted-foreground">Demanda recebida: {U3_DEMANDA}</p>
         <FonteCard id="F3" />
         <div className="ac-glass space-y-4 p-5">
           {U3_BRIEFING_CAMPOS.map((c) => (
@@ -515,10 +566,14 @@ export function RhModule1() {
         <Panel eyebrow="Unidade 7" title={RH_UNITS[6]!.title}>
           {unitIntro(6, U7_TEXTO)}
           <FonteCard id="F5" open />
-          <h3 className="text-xl font-medium">Exercício A: contagem, fórmula, taxa e limitações</h3>
+          <h3 className="text-xl font-medium">
+            Exercício A: calcule a taxa de conclusão da integração e diga o que os dados não provam
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Taxa = conclusões no prazo ÷ total de ingressantes do mesmo período × 100. Use números
-            (ex.: 75).
+            Com a tabela da fonte F5 acima, preencha os números de cada mês e a taxa de conclusão.
+            Depois registre as limitações e duas perguntas que você faria antes de tirar qualquer
+            conclusão. Taxa = conclusões no prazo ÷ total de ingressantes do mesmo período × 100.
+            Digite só números (ex.: 75).
           </p>
           <div className="ac-glass grid gap-4 p-5 sm:grid-cols-2">
             {(
@@ -568,7 +623,14 @@ export function RhModule1() {
             </Result>
           )}
           <LivreBox def={U7A_PERGUNTAS} state={s.livres[U7A_PERGUNTAS.id]} patch={patch} />
-          <h3 className="text-xl font-medium">Exercício B: revisão com falha plantada</h3>
+          <h3 className="text-xl font-medium">
+            Exercício B: revise uma resposta de IA que tem falhas escondidas
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Imagine que uma IA entregou o texto abaixo sobre os indicadores. Marque os problemas que
+            você encontrar. Há alguns que não são problemas de verdade, então marque só o que você
+            consegue justificar.
+          </p>
           <GuiadoErros
             titulo="Resposta inadequada para revisar"
             inadequada={U7B.inadequada}
@@ -579,10 +641,10 @@ export function RhModule1() {
             onChange={(v) => patch((x) => ({ ...x, u7b: v }))}
           />
           <LivreBox def={U7B_LIVRE} state={s.livres[U7B_LIVRE.id]} patch={patch} />
-          <h3 className="text-xl font-medium">Checklist CRIVO RH</h3>
+          <h3 className="text-xl font-medium">Checklist CRIVO RH: confira uma das suas entregas</h3>
           <p className="text-sm text-muted-foreground">
-            Aplique a uma das suas entregas (por exemplo, o FAQ P3) e marque o que realmente
-            conferiu.
+            Escolha uma das suas entregas (por exemplo, o FAQ da unidade 5) e marque apenas os itens
+            que você realmente conferiu nela. Depois conte qual entrega foi e o que encontrou.
           </p>
           <div className="ac-glass space-y-3 p-5">
             {CRIVO.map(([a, b], i) => (
@@ -630,7 +692,15 @@ export function RhModule1() {
     body = (
       <Panel eyebrow="Unidade 8" title="Laboratório de teste e piloto">
         {unitIntro(7, U8_TEXTO)}
-        <h3 className="text-xl font-medium">Laboratório obrigatório</h3>
+        <h3 className="text-xl font-medium">
+          Laboratório: teste um dos seus prompts e registre o que aconteceu
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Escolha um dos prompts que você escreveu nas unidades 4, 5 ou 6 e teste-o. Se você tem
+          acesso a uma ferramenta de IA autorizada, rode o prompt lá com o caso fictício e cole o
+          resultado aqui. Se não tem, use a comparação guiada. Em seguida preencha o formulário
+          abaixo.
+        </p>
         <div className="ac-glass space-y-3 p-5">
           <fieldset>
             <legend className="text-sm font-medium">Modalidade (registrada com o seu teste)</legend>
@@ -710,7 +780,14 @@ export function RhModule1() {
             )}
           </div>
         )}
-        <h3 className="text-xl font-medium">Piloto de sete dias (proposta didática)</h3>
+        <h3 className="text-xl font-medium">
+          Planeje um piloto de sete dias (só o plano, nada é executado)
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Piloto é um teste pequeno e controlado. Abaixo está um roteiro de sete dias como exemplo.
+          Leia e depois monte o seu plano com tarefa, período, responsável, critérios para parar e
+          como decidir o próximo passo.
+        </p>
         <ol className="list-decimal space-y-1 pl-6 text-[15px] text-muted-foreground">
           {PILOTO_DIAS.map((d) => (
             <li key={d}>{d}</li>

@@ -92,7 +92,7 @@ function Dashboard() {
               params={{ n: String(next) }}
               className="inline-flex min-h-11 items-center bg-foreground px-5 text-sm font-medium text-background"
             >
-              {next === 0 ? "Continuar o Módulo Start" : `Continuar a Semana ${next}`}
+              {next === 0 ? "Continuar o Módulo Start" : next === 1 ? "Continuar o Módulo 1" : `Continuar a Semana ${next}`}
             </Link>
           ) : (
             <Link
@@ -139,7 +139,7 @@ function Dashboard() {
                 className="grid items-center gap-3 border-b border-border py-4 md:grid-cols-12"
               >
                 <span className="eyebrow text-muted-foreground md:col-span-2">
-                  {m.n === 0 ? "Módulo Start" : `Semana ${m.n}`}
+                  {m.n === 0 ? "Módulo Start" : m.n === 1 ? "Módulo 1" : `Semana ${m.n}`}
                 </span>
                 <span className="font-medium md:col-span-6">{m.title}</span>
                 <span className="text-sm text-muted-foreground md:col-span-2">

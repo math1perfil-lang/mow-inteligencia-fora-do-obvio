@@ -42,7 +42,7 @@ Ao concluir o Módulo Start, você será capaz de:
 - Criar seu primeiro prompt profissional.
 - Receber feedback sobre a qualidade do prompt.
 - Gerar seu Perfil de Uso de IA.
-- Estar preparado para iniciar a Semana 1.`);
+- Estar preparado para iniciar o Módulo 1.`);
 
   s.push(`## 2. Introdução
 
@@ -264,7 +264,7 @@ ${CHECKLIST.map((c) => `- [ ] ${c}`).join("\n")}`);
 
 Concluído o Módulo Start, o seu Perfil de Uso de IA passa a personalizar os exemplos, tarefas, templates e desafios das próximas semanas.
 
-Na **Semana 1 — Fundamentos de IA Corporativa**, você vai aprofundar sua compreensão sobre IA generativa, aprender a identificar oportunidades reais de uso e criar seus primeiros prompts aplicados à sua área.
+No **Módulo 1 — Fundamentos de IA Corporativa**, você vai aprofundar sua compreensão sobre IA generativa, aprender a identificar oportunidades reais de uso e criar seus primeiros prompts aplicados à sua área.
 
 Antes de começar, teste seu primeiro prompt em uma situação real (com dados fictícios ou autorizados), registre o que funcionou e salve a melhor versão na sua biblioteca.`);
 

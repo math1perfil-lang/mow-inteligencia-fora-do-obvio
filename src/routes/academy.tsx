@@ -1,4 +1,5 @@
-import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Link, Outlet, createFileRoute, useRouterState } from "@tanstack/react-router";
 import { Award, BookMarked, GraduationCap, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/mow/shared";
 import { overall, useAcademy } from "@/lib/academy/store";
@@ -27,6 +28,11 @@ const NAV = [
 function AcademyLayout() {
   const { state, ready } = useAcademy();
   const pct = ready ? overall(state).percent : 0;
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  // Cada página nova do curso começa no topo.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
   return (
     <div className="ac-root">
       <div className="ac-glow ac-g1" aria-hidden="true" />

@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronLeft, ChevronRight, Copy, Lock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Bullets, Choice, CodeBlock, Panel } from "./ui";
 import { AREA_BY_ID } from "@/lib/academy/areas";
 import {
   AREA_OPTIONS,
@@ -44,94 +45,6 @@ function usePatch() {
 
 const nonEmpty = (v: string | string[] | undefined) =>
   Array.isArray(v) ? v.length > 0 : !!(v ?? "").trim();
-
-function Panel({
-  eyebrow,
-  title,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section aria-labelledby="start-step-title" className="ac-rise">
-      <p className="eyebrow text-muted-foreground">{eyebrow}</p>
-      <h2 id="start-step-title" className="mt-3 text-[clamp(1.9rem,4.5vw,3.2rem)] font-light">
-        {title}
-      </h2>
-      <div className="mt-8 space-y-6">{children}</div>
-    </section>
-  );
-}
-
-function Bullets({ items }: { items: string[] }) {
-  return (
-    <ul className="space-y-2 text-[15px] leading-relaxed text-muted-foreground">
-      {items.map((i) => (
-        <li key={i} className="flex gap-3">
-          <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-[var(--ac-accent)]" />
-          <span>{i}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function CodeBlock({ label, text }: { label?: string; text: string }) {
-  const [ok, setOk] = useState(false);
-  return (
-    <div className="ac-code">
-      <div className="flex items-center justify-between gap-3">
-        <span className="eyebrow text-muted-foreground">{label ?? "Modelo"}</span>
-        <button
-          type="button"
-          onClick={() => {
-            void navigator.clipboard?.writeText(text).then(() => {
-              setOk(true);
-              setTimeout(() => setOk(false), 1500);
-            });
-          }}
-          className="inline-flex min-h-9 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-        >
-          {ok ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-          {ok ? "Copiado" : "Copiar"}
-        </button>
-      </div>
-      <pre className="mt-3 whitespace-pre-wrap break-words font-sans text-[14px] leading-relaxed">
-        {text}
-      </pre>
-    </div>
-  );
-}
-
-function Choice({
-  selected,
-  correct,
-  wrong,
-  onClick,
-  children,
-  disabled,
-}: {
-  selected?: boolean;
-  correct?: boolean;
-  wrong?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      disabled={disabled}
-      onClick={onClick}
-      className={`ac-choice ${selected ? "is-on" : ""} ${correct ? "is-ok" : ""} ${wrong ? "is-bad" : ""}`}
-    >
-      {children}
-    </button>
-  );
-}
 
 /* ------------------------------------------------------------------------ */
 
@@ -182,6 +95,12 @@ export function StartModule() {
 
   const go = (n: number) => patch((s) => ({ ...s, step: n, max: Math.max(s.max, n) }));
 
+  // Ao mudar de etapa (ou concluir), a página volta ao topo para o aluno ler de cima para baixo.
+  useEffect(() => {
+    if (!ready) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [step, st.done, ready]);
+
   if (!ready) return <p className="text-sm text-muted-foreground">Carregando…</p>;
 
   /* -------- diagnóstico: aplica a área sugerida quando escolhida -------- */
@@ -213,17 +132,17 @@ export function StartModule() {
   const saveProfile = () => {
     if (!trilha) return;
     const text = st.perfil || buildPerfil({ diag: st.diag, trilha, prompt: st.promptText });
-    const nivelIdx = Math.max(0, NIVEL_OPTIONS.indexOf(String(st.diag.nivel ?? "")));
+    const nivelIdx = Math.max(0, NIVEL_OPTIONS.indexOf(String(st.diag["nivel"] ?? "")));
     const level: Level =
       nivelIdx <= 1 ? "iniciante" : nivelIdx === 2 ? "intermediario" : "avancado";
     const usaIdx =
       3 -
       Math.max(
         0,
-        (DIAG.find((q) => q.id === "usa")?.options ?? []).indexOf(String(st.diag.usa ?? "")),
+        (DIAG.find((q) => q.id === "usa")?.options ?? []).indexOf(String(st.diag["usa"] ?? "")),
       );
-    const tools = Array.isArray(st.diag.ferramentas)
-      ? st.diag.ferramentas.filter((t) => t !== "Nenhuma").length
+    const tools = Array.isArray(st.diag["ferramentas"])
+      ? st.diag["ferramentas"].filter((t) => t !== "Nenhuma").length
       : 0;
     const dims = [nivelIdx, usaIdx, Math.min(3, tools), Math.round((st.evalTotal ?? 0) / 34), 1, 0];
     updateAcademy((a) => {
@@ -235,7 +154,7 @@ export function StartModule() {
         profile: {
           area: trilha.id,
           level,
-          goal: String(st.diag.objetivo ?? ""),
+          goal: String(st.diag["objetivo"] ?? ""),
           score: Math.round(((nivelIdx + usaIdx) / 6) * 100),
           dims,
           createdAt: a.profile?.createdAt ?? now,
@@ -283,7 +202,7 @@ export function StartModule() {
           tarefas, templates e desafios das próximas semanas.
         </p>
         <p className="leading-relaxed text-muted-foreground">
-          Na <strong className="text-foreground">Semana 1 — Fundamentos de IA Corporativa</strong>,
+          No <strong className="text-foreground">Módulo 1 — Fundamentos de IA Corporativa</strong>,
           você vai aprofundar sua compreensão sobre IA generativa, aprender a identificar
           oportunidades reais de uso e criar seus primeiros prompts aplicados à sua área.
         </p>
@@ -296,7 +215,7 @@ export function StartModule() {
             params={{ n: "1" }}
             className="inline-flex min-h-12 items-center bg-primary px-6 text-sm text-primary-foreground"
           >
-            Iniciar Semana 1
+            Iniciar Módulo 1
           </Link>
           <Link
             to="/academy/start/apostila"
@@ -920,7 +839,7 @@ export function StartModule() {
           rows={20}
           className="w-full px-4 py-3 font-mono text-[13.5px] leading-relaxed"
         />
-        <p className="font-medium">Deseja salvar este perfil e avançar para a Semana 1?</p>
+        <p className="font-medium">Deseja salvar este perfil e avançar para o Módulo 1?</p>
         <div className="flex flex-wrap gap-3">
           <Button
             onClick={() => {

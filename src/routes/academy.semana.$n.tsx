@@ -1,4 +1,5 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
+import { Module1 } from "@/components/academy/Module1";
 import { GovernanceRules } from "@/components/academy/GovernanceRules";
 import { TaskRunner } from "@/components/academy/TaskRunner";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,6 +49,7 @@ function WeekPage() {
       </div>
     );
   }
+  if (idx === 1) return <Module1 />;
   const area = AREA_BY_ID[state.profile.area];
   const pr = moduleProgress(idx, state);
   const nextOpen = idx < MODULES.length - 1;

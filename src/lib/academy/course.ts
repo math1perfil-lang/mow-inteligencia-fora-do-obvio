@@ -85,7 +85,7 @@ export const MODULES: Module[] = [
     ],
     deliverable: (a) =>
       `Escreva em 3 a 5 linhas: qual tarefa real de ${a.name} você vai melhorar com IA ao longo do curso e como saberá que melhorou.`,
-    next: "Semana 1: fundamentos de IA corporativa.",
+    next: "Módulo 1: fundamentos de IA corporativa.",
     minutes: 75,
   },
   {

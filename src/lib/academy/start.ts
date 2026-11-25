@@ -1215,7 +1215,7 @@ const asText = (v: string | string[] | undefined) =>
 
 export function buildPerfil(args: { diag: StartDiag; trilha: Trilha; prompt: string }): string {
   const { diag, trilha, prompt } = args;
-  const ferr = asText(diag.ferramentas) || "Nenhuma";
+  const ferr = asText(diag["ferramentas"]) || "Nenhuma";
   const regras = [
     "Não inserir dados pessoais, confidenciais ou estratégicos sem autorização.",
     "Revisar respostas antes de usar.",
@@ -1227,21 +1227,21 @@ export function buildPerfil(args: { diag: StartDiag; trilha: Trilha; prompt: str
     "MEU PERFIL DE USO DE IA",
     "",
     `Área de atuação: ${trilha.nome}`,
-    `Cargo ou função: ${asText(diag.cargo) || "—"}`,
-    `Nível de experiência: ${asText(diag.nivel) || "—"}`,
+    `Cargo ou função: ${asText(diag["cargo"]) || "—"}`,
+    `Nível de experiência: ${asText(diag["nivel"]) || "—"}`,
     `Ferramenta principal: ${ferr.split(",")[0]!.trim()}`,
-    `Objetivo principal: ${asText(diag.objetivo) || "—"}`,
+    `Objetivo principal: ${asText(diag["objetivo"]) || "—"}`,
     `Trilha recomendada: ${trilha.nome} — projeto final: ${trilha.projeto}`,
-    `Tarefas prioritárias: ${asText(diag.tarefas) || trilha.tarefas.slice(0, 3).join(" ")}`,
-    `Entregas frequentes: ${asText(diag.entregas) || "—"}`,
-    `Tipo de rotina: ${asText(diag.rotina) || "—"}`,
-    `Indicadores importantes: ${asText(diag.indicadores) || trilha.indicadores.slice(0, 3).join(" ")}`,
-    `Informações que não posso compartilhar: ${asText(diag.sensivel) || "A definir com a política da minha empresa."}`,
-    `Principais desafios: ${asText(diag.desafios) || "—"}`,
+    `Tarefas prioritárias: ${asText(diag["tarefas"]) || trilha.tarefas.slice(0, 3).join(" ")}`,
+    `Entregas frequentes: ${asText(diag["entregas"]) || "—"}`,
+    `Tipo de rotina: ${asText(diag["rotina"]) || "—"}`,
+    `Indicadores importantes: ${asText(diag["indicadores"]) || trilha.indicadores.slice(0, 3).join(" ")}`,
+    `Informações que não posso compartilhar: ${asText(diag["sensivel"]) || "A definir com a política da minha empresa."}`,
+    `Principais desafios: ${asText(diag["desafios"]) || "—"}`,
     `Oportunidades de uso de IA: ${trilha.exemplos.slice(0, 3).join(" ")}`,
     `Primeiro prompt criado: ${prompt.trim().split("\n")[0] ?? "—"}…`,
     `Regras de segurança: ${regras.join(" ")}`,
-    "Próximo passo: Iniciar a Semana 1 — Fundamentos de IA Corporativa.",
+    "Próximo passo: Iniciar o Módulo 1 — Fundamentos de IA Corporativa.",
   ];
   return linhas.join("\n");
 }
@@ -1258,7 +1258,7 @@ export const CHECKLIST = [
   "Recebi feedback sobre meu prompt.",
   "Gerei meu Perfil de Uso de IA.",
   "Defini minhas regras de segurança.",
-  "Estou pronto para iniciar a Semana 1.",
+  "Estou pronto para iniciar o Módulo 1.",
 ];
 
 export const REGRAS_SEGURANCA = [

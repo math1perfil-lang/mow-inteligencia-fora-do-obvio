@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import type { AreaId } from "./areas";
 import { AREA_BY_ID } from "./areas";
 import { MODULES } from "./course";
+import { m1Progress, type M1State } from "./modulo1-logic";
 
 export type Level = "iniciante" | "intermediario" | "avancado";
 export type PromptStatus = "rascunho" | "em teste" | "aprovado" | "arquivado";
@@ -69,6 +70,7 @@ export const EMPTY_START: StartState = {
 
 export interface AcademyState {
   start?: StartState;
+  m1?: M1State;
   profile?: Profile;
   /** taskId -> pontos (0 a 100) */
   done: Record<string, number>;
@@ -94,6 +96,9 @@ const EMPTY: AcademyState = {
 
 let state: AcademyState = EMPTY;
 let loaded = false;
+/** Resultado real da última gravação no navegador. */
+let saveStatus: "none" | "ok" | "fail" = "none";
+export const getSaveStatus = () => saveStatus;
 const listeners = new Set<() => void>();
 
 function load() {
@@ -116,8 +121,10 @@ export function updateAcademy(fn: (s: AcademyState) => AcademyState) {
   state = fn(state);
   try {
     window.localStorage.setItem(KEY, JSON.stringify(state));
+    // confirma que a gravação realmente aconteceu
+    saveStatus = window.localStorage.getItem(KEY) ? "ok" : "fail";
   } catch {
-    /* sem persistência: mantém em memória */
+    saveStatus = "fail";
   }
   emit();
 }
@@ -153,6 +160,18 @@ export function useAcademy() {
 
 export function moduleProgress(n: number, s: AcademyState) {
   const m = MODULES[n]!;
+  if (n === 1) {
+    const p = m1Progress(s.m1, s.profile?.area);
+    return {
+      tasks: 0,
+      checks: 0,
+      deliverable: p.complete,
+      total: 8,
+      doneUnits: p.doneUnits,
+      complete: p.complete,
+      percent: p.percent,
+    };
+  }
   if (n === 0) {
     const st = s.start ?? EMPTY_START;
     const percent = st.done ? 100 : Math.round((Math.min(st.max, 11) / 12) * 100);

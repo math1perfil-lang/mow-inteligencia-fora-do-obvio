@@ -53,6 +53,7 @@ export function StartModule() {
   const st = state.start ?? EMPTY_START;
   const patch = usePatch();
   const [ev, setEv] = useState<StartEvaluation | null>(null);
+  const [trocarTrilha, setTrocarTrilha] = useState(false);
   const step = Math.min(st.step, 11);
 
   const trilha = st.area ? TRILHA_BY_ID[st.area] : undefined;
@@ -399,12 +400,12 @@ export function StartModule() {
     body = (
       <Panel eyebrow="Etapa 4 · Trilha" title="Escolha a trilha da sua área.">
         <p className="leading-relaxed text-muted-foreground">
-          {st.area
-            ? "Trilha pré-selecionada pelo seu diagnóstico. Você pode trocar."
+          {st.area && !trocarTrilha
+            ? "Esta é a trilha da área que você informou no diagnóstico. Ela definirá o restante do seu curso."
             : "Selecione a trilha que melhor representa o seu trabalho."}
         </p>
         <div className="grid gap-4 md:grid-cols-2">
-          {TRILHAS.map((t) => {
+          {TRILHAS.filter((t) => trocarTrilha || !st.area || t.id === st.area).map((t) => {
             const on = st.area === t.id;
             return (
               <button
@@ -449,6 +450,17 @@ export function StartModule() {
             );
           })}
         </div>
+        {st.area && (
+          <button
+            type="button"
+            onClick={() => setTrocarTrilha((v) => !v)}
+            className="text-sm text-[var(--ac-accent)] underline underline-offset-4"
+          >
+            {trocarTrilha
+              ? "Mostrar só a trilha da minha área"
+              : "Não é esta? Escolher outra trilha"}
+          </button>
+        )}
       </Panel>
     );
   } else if (step === 4) {

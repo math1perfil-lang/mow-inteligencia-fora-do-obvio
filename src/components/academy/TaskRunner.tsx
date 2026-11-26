@@ -114,7 +114,10 @@ export function TaskRunner({
                   onClick={() =>
                     setOrder((o) => {
                       const n = [...o];
-                      [n[pos - 1], n[pos]] = [n[pos], n[pos - 1]];
+                      if (pos === 0) return n;
+                      const previous = n[pos - 1]!;
+                      n[pos - 1] = n[pos]!;
+                      n[pos] = previous;
                       return n;
                     })
                   }
@@ -129,7 +132,10 @@ export function TaskRunner({
                   onClick={() =>
                     setOrder((o) => {
                       const n = [...o];
-                      [n[pos + 1], n[pos]] = [n[pos], n[pos + 1]];
+                      if (pos >= n.length - 1) return n;
+                      const next = n[pos + 1]!;
+                      n[pos + 1] = n[pos]!;
+                      n[pos] = next;
                       return n;
                     })
                   }

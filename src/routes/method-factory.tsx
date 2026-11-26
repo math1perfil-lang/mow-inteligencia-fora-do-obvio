@@ -19,8 +19,10 @@ export function FactoryLayout() {
   const isPublicLanding = pathname === "/method-factory" || pathname === "/method-factory/";
   const isOpenAlex = pathname === "/method-factory/openalex";
   const isClientIntake = pathname === "/method-factory/intake";
+  const isClientSolution = pathname === "/method-factory/solution";
   const isStandalonePublicPath =
     isClientIntake ||
+    isClientSolution ||
     pathname === "/method-factory/review" ||
     pathname === "/method-factory/reset-password";
   const isPublicFactoryPath = isPublicLanding || isStandalonePublicPath;
@@ -87,35 +89,38 @@ export function FactoryLayout() {
               <span>Factory</span>
             </span>
           </Link>
-          <nav
-            aria-label="Method Factory"
-            className="mf-nav order-3 flex w-full items-center gap-7 overflow-x-auto pt-1 text-base lg:order-none lg:ml-auto lg:w-auto lg:pt-0"
-          >
-            {isPublicLanding ? (
-              <>
-                <a href="#como-funciona">Como funciona</a>
-                <a href="#para-quem">Para quem</a>
-              </>
-            ) : isStandalonePublicPath ? (
-              <Link to="/method-factory">Method Factory</Link>
-            ) : (
-              <>
-                <Link
-                  to="/method-factory/workspace"
-                  activeOptions={{ exact: true }}
-                  activeProps={{ className: "is-current" }}
-                >
-                  Visão geral
-                </Link>
-                <Link to="/method-factory/brief-preview" activeProps={{ className: "is-current" }}>
-                  Briefing <ArrowUpRight className="ml-1 inline size-3.5" aria-hidden="true" />
-                </Link>
-              </>
-            )}
-          </nav>
+          {!isStandalonePublicPath ? (
+            <nav
+              aria-label="Method Factory"
+              className="mf-nav order-3 flex w-full items-center gap-7 overflow-x-auto pt-1 text-base lg:order-none lg:ml-auto lg:w-auto lg:pt-0"
+            >
+              {isPublicLanding ? (
+                <>
+                  <a href="#como-funciona">Como funciona</a>
+                  <a href="#para-quem">Para quem</a>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/method-factory/workspace"
+                    activeOptions={{ exact: true }}
+                    activeProps={{ className: "is-current" }}
+                  >
+                    Visão geral
+                  </Link>
+                  <Link
+                    to="/method-factory/brief-preview"
+                    activeProps={{ className: "is-current" }}
+                  >
+                    Briefing <ArrowUpRight className="ml-1 inline size-3.5" aria-hidden="true" />
+                  </Link>
+                </>
+              )}
+            </nav>
+          ) : null}
         </div>
       </header>
-      {!isPublicFactoryPath ? (
+      {!isPublicFactoryPath && !isClientSolution ? (
         <div className="relative z-10 mx-auto max-w-7xl px-5 pt-5 sm:px-8">
           <div className="mf-rise glass flex items-start gap-3.5 px-5 py-3.5 text-[15px] leading-relaxed text-muted-foreground">
             <FlaskConical className="mt-0.5 size-5 shrink-0 text-[#3a3fb8]" aria-hidden="true" />

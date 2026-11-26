@@ -184,7 +184,7 @@ function parseRetryAfter(value: string | null): number | null {
 function parseRateLimitReason(value: unknown): OpenAlexRateLimitReason | null {
   if (!isRecord(value)) return null;
 
-  const reason = readString(value.reason)?.toLowerCase();
+  const reason = readString(value["reason"])?.toLowerCase();
   switch (reason) {
     case "requests_per_second":
     case "broad_boolean_query":
@@ -198,7 +198,7 @@ function parseRateLimitReason(value: unknown): OpenAlexRateLimitReason | null {
       return "new_account_pacing";
   }
 
-  const error = readString(value.error)?.toLowerCase();
+  const error = readString(value["error"])?.toLowerCase();
   if (error === "not_enough_credits" || error === "daily budget exceeded") {
     return "daily_budget";
   }

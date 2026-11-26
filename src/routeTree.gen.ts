@@ -10,8 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as MethodFactoryRouteImport } from './routes/method-factory'
+import { Route as AcademyIndexRouteImport } from './routes/academy.index'
+import { Route as AcademyBibliotecaRouteImport } from './routes/academy.biblioteca'
+import { Route as AcademyCertificadoRouteImport } from './routes/academy.certificado'
+import { Route as AcademyDiagnosticoRouteImport } from './routes/academy.diagnostico'
+import { Route as AcademyPainelRouteImport } from './routes/academy.painel'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAnaliseRouteImport } from './routes/admin/analise'
 import { Route as AdminRoteirosRouteImport } from './routes/admin/roteiros'
@@ -21,13 +27,20 @@ import { Route as MethodFactoryIntakeRouteImport } from './routes/method-factory
 import { Route as MethodFactoryOpenalexRouteImport } from './routes/method-factory.openalex'
 import { Route as MethodFactoryResetPasswordRouteImport } from './routes/method-factory.reset-password'
 import { Route as MethodFactoryReviewRouteImport } from './routes/method-factory.review'
+import { Route as MethodFactorySolutionRouteImport } from './routes/method-factory.solution'
 import { Route as MethodFactoryWorkspaceRouteImport } from './routes/method-factory.workspace'
+import { Route as AcademySemanaNRouteImport } from './routes/academy.semana.$n'
 import { Route as AdminEntrevistasIndexRouteImport } from './routes/admin/entrevistas.index'
 import { Route as AdminEntrevistasIdRouteImport } from './routes/admin/entrevistas.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AcademyRoute = AcademyRouteImport.update({
+  id: '/academy',
+  path: '/academy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -39,6 +52,31 @@ const MethodFactoryRoute = MethodFactoryRouteImport.update({
   id: '/method-factory',
   path: '/method-factory',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AcademyIndexRoute = AcademyIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AcademyRoute,
+} as any)
+const AcademyBibliotecaRoute = AcademyBibliotecaRouteImport.update({
+  id: '/biblioteca',
+  path: '/biblioteca',
+  getParentRoute: () => AcademyRoute,
+} as any)
+const AcademyCertificadoRoute = AcademyCertificadoRouteImport.update({
+  id: '/certificado',
+  path: '/certificado',
+  getParentRoute: () => AcademyRoute,
+} as any)
+const AcademyDiagnosticoRoute = AcademyDiagnosticoRouteImport.update({
+  id: '/diagnostico',
+  path: '/diagnostico',
+  getParentRoute: () => AcademyRoute,
+} as any)
+const AcademyPainelRoute = AcademyPainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => AcademyRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
@@ -87,10 +125,20 @@ const MethodFactoryReviewRoute = MethodFactoryReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => MethodFactoryRoute,
 } as any)
+const MethodFactorySolutionRoute = MethodFactorySolutionRouteImport.update({
+  id: '/solution',
+  path: '/solution',
+  getParentRoute: () => MethodFactoryRoute,
+} as any)
 const MethodFactoryWorkspaceRoute = MethodFactoryWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
   getParentRoute: () => MethodFactoryRoute,
+} as any)
+const AcademySemanaNRoute = AcademySemanaNRouteImport.update({
+  id: '/semana/$n',
+  path: '/semana/$n',
+  getParentRoute: () => AcademyRoute,
 } as any)
 const AdminEntrevistasIndexRoute = AdminEntrevistasIndexRouteImport.update({
   id: '/entrevistas/',
@@ -105,8 +153,13 @@ const AdminEntrevistasIdRoute = AdminEntrevistasIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/academy': typeof AcademyRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/method-factory': typeof MethodFactoryRouteWithChildren
+  '/academy/biblioteca': typeof AcademyBibliotecaRoute
+  '/academy/certificado': typeof AcademyCertificadoRoute
+  '/academy/diagnostico': typeof AcademyDiagnosticoRoute
+  '/academy/painel': typeof AcademyPainelRoute
   '/admin/analise': typeof AdminAnaliseRoute
   '/admin/roteiros': typeof AdminRoteirosRoute
   '/method-factory/brief-preview': typeof MethodFactoryBriefPreviewRoute
@@ -114,14 +167,21 @@ export interface FileRoutesByFullPath {
   '/method-factory/openalex': typeof MethodFactoryOpenalexRoute
   '/method-factory/reset-password': typeof MethodFactoryResetPasswordRoute
   '/method-factory/review': typeof MethodFactoryReviewRoute
+  '/method-factory/solution': typeof MethodFactorySolutionRoute
   '/method-factory/workspace': typeof MethodFactoryWorkspaceRoute
+  '/academy/': typeof AcademyIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/method-factory/': typeof MethodFactoryIndexRoute
+  '/academy/semana/$n': typeof AcademySemanaNRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
   '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/academy/biblioteca': typeof AcademyBibliotecaRoute
+  '/academy/certificado': typeof AcademyCertificadoRoute
+  '/academy/diagnostico': typeof AcademyDiagnosticoRoute
+  '/academy/painel': typeof AcademyPainelRoute
   '/admin/analise': typeof AdminAnaliseRoute
   '/admin/roteiros': typeof AdminRoteirosRoute
   '/method-factory/brief-preview': typeof MethodFactoryBriefPreviewRoute
@@ -129,17 +189,25 @@ export interface FileRoutesByTo {
   '/method-factory/openalex': typeof MethodFactoryOpenalexRoute
   '/method-factory/reset-password': typeof MethodFactoryResetPasswordRoute
   '/method-factory/review': typeof MethodFactoryReviewRoute
+  '/method-factory/solution': typeof MethodFactorySolutionRoute
   '/method-factory/workspace': typeof MethodFactoryWorkspaceRoute
+  '/academy': typeof AcademyIndexRoute
   '/admin': typeof AdminIndexRoute
   '/method-factory': typeof MethodFactoryIndexRoute
+  '/academy/semana/$n': typeof AcademySemanaNRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
   '/admin/entrevistas': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/academy': typeof AcademyRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/method-factory': typeof MethodFactoryRouteWithChildren
+  '/academy/biblioteca': typeof AcademyBibliotecaRoute
+  '/academy/certificado': typeof AcademyCertificadoRoute
+  '/academy/diagnostico': typeof AcademyDiagnosticoRoute
+  '/academy/painel': typeof AcademyPainelRoute
   '/admin/analise': typeof AdminAnaliseRoute
   '/admin/roteiros': typeof AdminRoteirosRoute
   '/method-factory/brief-preview': typeof MethodFactoryBriefPreviewRoute
@@ -147,9 +215,12 @@ export interface FileRoutesById {
   '/method-factory/openalex': typeof MethodFactoryOpenalexRoute
   '/method-factory/reset-password': typeof MethodFactoryResetPasswordRoute
   '/method-factory/review': typeof MethodFactoryReviewRoute
+  '/method-factory/solution': typeof MethodFactorySolutionRoute
   '/method-factory/workspace': typeof MethodFactoryWorkspaceRoute
+  '/academy/': typeof AcademyIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/method-factory/': typeof MethodFactoryIndexRoute
+  '/academy/semana/$n': typeof AcademySemanaNRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
   '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
@@ -157,8 +228,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/academy'
     | '/admin'
     | '/method-factory'
+    | '/academy/biblioteca'
+    | '/academy/certificado'
+    | '/academy/diagnostico'
+    | '/academy/painel'
     | '/admin/analise'
     | '/admin/roteiros'
     | '/method-factory/brief-preview'
@@ -166,14 +242,21 @@ export interface FileRouteTypes {
     | '/method-factory/openalex'
     | '/method-factory/reset-password'
     | '/method-factory/review'
+    | '/method-factory/solution'
     | '/method-factory/workspace'
+    | '/academy/'
     | '/admin/'
     | '/method-factory/'
+    | '/academy/semana/$n'
     | '/admin/entrevistas/$id'
     | '/admin/entrevistas/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/academy/biblioteca'
+    | '/academy/certificado'
+    | '/academy/diagnostico'
+    | '/academy/painel'
     | '/admin/analise'
     | '/admin/roteiros'
     | '/method-factory/brief-preview'
@@ -181,16 +264,24 @@ export interface FileRouteTypes {
     | '/method-factory/openalex'
     | '/method-factory/reset-password'
     | '/method-factory/review'
+    | '/method-factory/solution'
     | '/method-factory/workspace'
+    | '/academy'
     | '/admin'
     | '/method-factory'
+    | '/academy/semana/$n'
     | '/admin/entrevistas/$id'
     | '/admin/entrevistas'
   id:
     | '__root__'
     | '/'
+    | '/academy'
     | '/admin'
     | '/method-factory'
+    | '/academy/biblioteca'
+    | '/academy/certificado'
+    | '/academy/diagnostico'
+    | '/academy/painel'
     | '/admin/analise'
     | '/admin/roteiros'
     | '/method-factory/brief-preview'
@@ -198,15 +289,19 @@ export interface FileRouteTypes {
     | '/method-factory/openalex'
     | '/method-factory/reset-password'
     | '/method-factory/review'
+    | '/method-factory/solution'
     | '/method-factory/workspace'
+    | '/academy/'
     | '/admin/'
     | '/method-factory/'
+    | '/academy/semana/$n'
     | '/admin/entrevistas/$id'
     | '/admin/entrevistas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AcademyRoute: typeof AcademyRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   MethodFactoryRoute: typeof MethodFactoryRouteWithChildren
 }
@@ -218,6 +313,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/academy': {
+      id: '/academy'
+      path: '/academy'
+      fullPath: '/academy'
+      preLoaderRoute: typeof AcademyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -233,6 +335,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/method-factory'
       preLoaderRoute: typeof MethodFactoryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/academy/': {
+      id: '/academy/'
+      path: '/'
+      fullPath: '/academy/'
+      preLoaderRoute: typeof AcademyIndexRouteImport
+      parentRoute: typeof AcademyRoute
+    }
+    '/academy/biblioteca': {
+      id: '/academy/biblioteca'
+      path: '/biblioteca'
+      fullPath: '/academy/biblioteca'
+      preLoaderRoute: typeof AcademyBibliotecaRouteImport
+      parentRoute: typeof AcademyRoute
+    }
+    '/academy/certificado': {
+      id: '/academy/certificado'
+      path: '/certificado'
+      fullPath: '/academy/certificado'
+      preLoaderRoute: typeof AcademyCertificadoRouteImport
+      parentRoute: typeof AcademyRoute
+    }
+    '/academy/diagnostico': {
+      id: '/academy/diagnostico'
+      path: '/diagnostico'
+      fullPath: '/academy/diagnostico'
+      preLoaderRoute: typeof AcademyDiagnosticoRouteImport
+      parentRoute: typeof AcademyRoute
+    }
+    '/academy/painel': {
+      id: '/academy/painel'
+      path: '/painel'
+      fullPath: '/academy/painel'
+      preLoaderRoute: typeof AcademyPainelRouteImport
+      parentRoute: typeof AcademyRoute
     }
     '/admin/': {
       id: '/admin/'
@@ -297,12 +434,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MethodFactoryReviewRouteImport
       parentRoute: typeof MethodFactoryRoute
     }
+    '/method-factory/solution': {
+      id: '/method-factory/solution'
+      path: '/solution'
+      fullPath: '/method-factory/solution'
+      preLoaderRoute: typeof MethodFactorySolutionRouteImport
+      parentRoute: typeof MethodFactoryRoute
+    }
     '/method-factory/workspace': {
       id: '/method-factory/workspace'
       path: '/workspace'
       fullPath: '/method-factory/workspace'
       preLoaderRoute: typeof MethodFactoryWorkspaceRouteImport
       parentRoute: typeof MethodFactoryRoute
+    }
+    '/academy/semana/$n': {
+      id: '/academy/semana/$n'
+      path: '/semana/$n'
+      fullPath: '/academy/semana/$n'
+      preLoaderRoute: typeof AcademySemanaNRouteImport
+      parentRoute: typeof AcademyRoute
     }
     '/admin/entrevistas/': {
       id: '/admin/entrevistas/'
@@ -320,6 +471,27 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AcademyRouteChildren {
+  AcademyBibliotecaRoute: typeof AcademyBibliotecaRoute
+  AcademyCertificadoRoute: typeof AcademyCertificadoRoute
+  AcademyDiagnosticoRoute: typeof AcademyDiagnosticoRoute
+  AcademyPainelRoute: typeof AcademyPainelRoute
+  AcademyIndexRoute: typeof AcademyIndexRoute
+  AcademySemanaNRoute: typeof AcademySemanaNRoute
+}
+
+const AcademyRouteChildren: AcademyRouteChildren = {
+  AcademyBibliotecaRoute: AcademyBibliotecaRoute,
+  AcademyCertificadoRoute: AcademyCertificadoRoute,
+  AcademyDiagnosticoRoute: AcademyDiagnosticoRoute,
+  AcademyPainelRoute: AcademyPainelRoute,
+  AcademyIndexRoute: AcademyIndexRoute,
+  AcademySemanaNRoute: AcademySemanaNRoute,
+}
+
+const AcademyRouteWithChildren =
+  AcademyRoute._addFileChildren(AcademyRouteChildren)
 
 interface AdminRouteChildren {
   AdminAnaliseRoute: typeof AdminAnaliseRoute
@@ -345,6 +517,7 @@ interface MethodFactoryRouteChildren {
   MethodFactoryOpenalexRoute: typeof MethodFactoryOpenalexRoute
   MethodFactoryResetPasswordRoute: typeof MethodFactoryResetPasswordRoute
   MethodFactoryReviewRoute: typeof MethodFactoryReviewRoute
+  MethodFactorySolutionRoute: typeof MethodFactorySolutionRoute
   MethodFactoryWorkspaceRoute: typeof MethodFactoryWorkspaceRoute
   MethodFactoryIndexRoute: typeof MethodFactoryIndexRoute
 }
@@ -355,6 +528,7 @@ const MethodFactoryRouteChildren: MethodFactoryRouteChildren = {
   MethodFactoryOpenalexRoute: MethodFactoryOpenalexRoute,
   MethodFactoryResetPasswordRoute: MethodFactoryResetPasswordRoute,
   MethodFactoryReviewRoute: MethodFactoryReviewRoute,
+  MethodFactorySolutionRoute: MethodFactorySolutionRoute,
   MethodFactoryWorkspaceRoute: MethodFactoryWorkspaceRoute,
   MethodFactoryIndexRoute: MethodFactoryIndexRoute,
 }
@@ -365,6 +539,7 @@ const MethodFactoryRouteWithChildren = MethodFactoryRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AcademyRoute: AcademyRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   MethodFactoryRoute: MethodFactoryRouteWithChildren,
 }

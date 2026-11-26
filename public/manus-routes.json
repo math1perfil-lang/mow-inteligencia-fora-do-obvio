@@ -11,6 +11,7 @@
     { "path": "/method-factory/brief-preview", "title": "Briefing · Prévia sem envio" },
     { "path": "/method-factory/intake", "title": "Briefing por convite" },
     { "path": "/method-factory/openalex", "title": "OpenAlex · Uso interno" },
+    { "path": "/method-factory/solution", "title": "Execução da solução · Cliente" },
     { "path": "/method-factory/reset-password", "title": "Redefinir senha" },
     { "path": "/method-factory/review", "title": "Revisão interna" }
   ]

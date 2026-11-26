@@ -14,6 +14,8 @@ import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as MethodFactoryRouteImport } from './routes/method-factory'
 import { Route as AcademyIndexRouteImport } from './routes/academy.index'
+import { Route as AcademyApostilaModulo1RouteImport } from './routes/academy.apostila-modulo-1'
+import { Route as AcademyApostilaRh1RouteImport } from './routes/academy.apostila-rh-1'
 import { Route as AcademyBibliotecaRouteImport } from './routes/academy.biblioteca'
 import { Route as AcademyCertificadoRouteImport } from './routes/academy.certificado'
 import { Route as AcademyDiagnosticoRouteImport } from './routes/academy.diagnostico'
@@ -30,6 +32,8 @@ import { Route as MethodFactoryReviewRouteImport } from './routes/method-factory
 import { Route as MethodFactorySolutionRouteImport } from './routes/method-factory.solution'
 import { Route as MethodFactoryWorkspaceRouteImport } from './routes/method-factory.workspace'
 import { Route as AcademySemanaNRouteImport } from './routes/academy.semana.$n'
+import { Route as AcademyStartIndexRouteImport } from './routes/academy.start.index'
+import { Route as AcademyStartApostilaRouteImport } from './routes/academy.start.apostila'
 import { Route as AdminEntrevistasIndexRouteImport } from './routes/admin/entrevistas.index'
 import { Route as AdminEntrevistasIdRouteImport } from './routes/admin/entrevistas.$id'
 
@@ -56,6 +60,16 @@ const MethodFactoryRoute = MethodFactoryRouteImport.update({
 const AcademyIndexRoute = AcademyIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AcademyRoute,
+} as any)
+const AcademyApostilaModulo1Route = AcademyApostilaModulo1RouteImport.update({
+  id: '/apostila-modulo-1',
+  path: '/apostila-modulo-1',
+  getParentRoute: () => AcademyRoute,
+} as any)
+const AcademyApostilaRh1Route = AcademyApostilaRh1RouteImport.update({
+  id: '/apostila-rh-1',
+  path: '/apostila-rh-1',
   getParentRoute: () => AcademyRoute,
 } as any)
 const AcademyBibliotecaRoute = AcademyBibliotecaRouteImport.update({
@@ -140,6 +154,16 @@ const AcademySemanaNRoute = AcademySemanaNRouteImport.update({
   path: '/semana/$n',
   getParentRoute: () => AcademyRoute,
 } as any)
+const AcademyStartIndexRoute = AcademyStartIndexRouteImport.update({
+  id: '/start/',
+  path: '/start/',
+  getParentRoute: () => AcademyRoute,
+} as any)
+const AcademyStartApostilaRoute = AcademyStartApostilaRouteImport.update({
+  id: '/start/apostila',
+  path: '/start/apostila',
+  getParentRoute: () => AcademyRoute,
+} as any)
 const AdminEntrevistasIndexRoute = AdminEntrevistasIndexRouteImport.update({
   id: '/entrevistas/',
   path: '/entrevistas/',
@@ -156,6 +180,8 @@ export interface FileRoutesByFullPath {
   '/academy': typeof AcademyRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/method-factory': typeof MethodFactoryRouteWithChildren
+  '/academy/apostila-modulo-1': typeof AcademyApostilaModulo1Route
+  '/academy/apostila-rh-1': typeof AcademyApostilaRh1Route
   '/academy/biblioteca': typeof AcademyBibliotecaRoute
   '/academy/certificado': typeof AcademyCertificadoRoute
   '/academy/diagnostico': typeof AcademyDiagnosticoRoute
@@ -173,11 +199,15 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/method-factory/': typeof MethodFactoryIndexRoute
   '/academy/semana/$n': typeof AcademySemanaNRoute
+  '/academy/start/apostila': typeof AcademyStartApostilaRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
+  '/academy/start/': typeof AcademyStartIndexRoute
   '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/academy/apostila-modulo-1': typeof AcademyApostilaModulo1Route
+  '/academy/apostila-rh-1': typeof AcademyApostilaRh1Route
   '/academy/biblioteca': typeof AcademyBibliotecaRoute
   '/academy/certificado': typeof AcademyCertificadoRoute
   '/academy/diagnostico': typeof AcademyDiagnosticoRoute
@@ -195,7 +225,9 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/method-factory': typeof MethodFactoryIndexRoute
   '/academy/semana/$n': typeof AcademySemanaNRoute
+  '/academy/start/apostila': typeof AcademyStartApostilaRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
+  '/academy/start': typeof AcademyStartIndexRoute
   '/admin/entrevistas': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRoutesById {
@@ -204,6 +236,8 @@ export interface FileRoutesById {
   '/academy': typeof AcademyRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/method-factory': typeof MethodFactoryRouteWithChildren
+  '/academy/apostila-modulo-1': typeof AcademyApostilaModulo1Route
+  '/academy/apostila-rh-1': typeof AcademyApostilaRh1Route
   '/academy/biblioteca': typeof AcademyBibliotecaRoute
   '/academy/certificado': typeof AcademyCertificadoRoute
   '/academy/diagnostico': typeof AcademyDiagnosticoRoute
@@ -221,7 +255,9 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/method-factory/': typeof MethodFactoryIndexRoute
   '/academy/semana/$n': typeof AcademySemanaNRoute
+  '/academy/start/apostila': typeof AcademyStartApostilaRoute
   '/admin/entrevistas/$id': typeof AdminEntrevistasIdRoute
+  '/academy/start/': typeof AcademyStartIndexRoute
   '/admin/entrevistas/': typeof AdminEntrevistasIndexRoute
 }
 export interface FileRouteTypes {
@@ -231,6 +267,8 @@ export interface FileRouteTypes {
     | '/academy'
     | '/admin'
     | '/method-factory'
+    | '/academy/apostila-modulo-1'
+    | '/academy/apostila-rh-1'
     | '/academy/biblioteca'
     | '/academy/certificado'
     | '/academy/diagnostico'
@@ -248,11 +286,15 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/method-factory/'
     | '/academy/semana/$n'
+    | '/academy/start/apostila'
     | '/admin/entrevistas/$id'
+    | '/academy/start/'
     | '/admin/entrevistas/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/academy/apostila-modulo-1'
+    | '/academy/apostila-rh-1'
     | '/academy/biblioteca'
     | '/academy/certificado'
     | '/academy/diagnostico'
@@ -270,7 +312,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/method-factory'
     | '/academy/semana/$n'
+    | '/academy/start/apostila'
     | '/admin/entrevistas/$id'
+    | '/academy/start'
     | '/admin/entrevistas'
   id:
     | '__root__'
@@ -278,6 +322,8 @@ export interface FileRouteTypes {
     | '/academy'
     | '/admin'
     | '/method-factory'
+    | '/academy/apostila-modulo-1'
+    | '/academy/apostila-rh-1'
     | '/academy/biblioteca'
     | '/academy/certificado'
     | '/academy/diagnostico'
@@ -295,7 +341,9 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/method-factory/'
     | '/academy/semana/$n'
+    | '/academy/start/apostila'
     | '/admin/entrevistas/$id'
+    | '/academy/start/'
     | '/admin/entrevistas/'
   fileRoutesById: FileRoutesById
 }
@@ -341,6 +389,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/academy/'
       preLoaderRoute: typeof AcademyIndexRouteImport
+      parentRoute: typeof AcademyRoute
+    }
+    '/academy/apostila-modulo-1': {
+      id: '/academy/apostila-modulo-1'
+      path: '/apostila-modulo-1'
+      fullPath: '/academy/apostila-modulo-1'
+      preLoaderRoute: typeof AcademyApostilaModulo1RouteImport
+      parentRoute: typeof AcademyRoute
+    }
+    '/academy/apostila-rh-1': {
+      id: '/academy/apostila-rh-1'
+      path: '/apostila-rh-1'
+      fullPath: '/academy/apostila-rh-1'
+      preLoaderRoute: typeof AcademyApostilaRh1RouteImport
       parentRoute: typeof AcademyRoute
     }
     '/academy/biblioteca': {
@@ -455,6 +517,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcademySemanaNRouteImport
       parentRoute: typeof AcademyRoute
     }
+    '/academy/start/': {
+      id: '/academy/start/'
+      path: '/start'
+      fullPath: '/academy/start/'
+      preLoaderRoute: typeof AcademyStartIndexRouteImport
+      parentRoute: typeof AcademyRoute
+    }
+    '/academy/start/apostila': {
+      id: '/academy/start/apostila'
+      path: '/start/apostila'
+      fullPath: '/academy/start/apostila'
+      preLoaderRoute: typeof AcademyStartApostilaRouteImport
+      parentRoute: typeof AcademyRoute
+    }
     '/admin/entrevistas/': {
       id: '/admin/entrevistas/'
       path: '/entrevistas'
@@ -473,21 +549,29 @@ declare module '@tanstack/react-router' {
 }
 
 interface AcademyRouteChildren {
+  AcademyApostilaModulo1Route: typeof AcademyApostilaModulo1Route
+  AcademyApostilaRh1Route: typeof AcademyApostilaRh1Route
   AcademyBibliotecaRoute: typeof AcademyBibliotecaRoute
   AcademyCertificadoRoute: typeof AcademyCertificadoRoute
   AcademyDiagnosticoRoute: typeof AcademyDiagnosticoRoute
   AcademyPainelRoute: typeof AcademyPainelRoute
   AcademyIndexRoute: typeof AcademyIndexRoute
   AcademySemanaNRoute: typeof AcademySemanaNRoute
+  AcademyStartApostilaRoute: typeof AcademyStartApostilaRoute
+  AcademyStartIndexRoute: typeof AcademyStartIndexRoute
 }
 
 const AcademyRouteChildren: AcademyRouteChildren = {
+  AcademyApostilaModulo1Route: AcademyApostilaModulo1Route,
+  AcademyApostilaRh1Route: AcademyApostilaRh1Route,
   AcademyBibliotecaRoute: AcademyBibliotecaRoute,
   AcademyCertificadoRoute: AcademyCertificadoRoute,
   AcademyDiagnosticoRoute: AcademyDiagnosticoRoute,
   AcademyPainelRoute: AcademyPainelRoute,
   AcademyIndexRoute: AcademyIndexRoute,
   AcademySemanaNRoute: AcademySemanaNRoute,
+  AcademyStartApostilaRoute: AcademyStartApostilaRoute,
+  AcademyStartIndexRoute: AcademyStartIndexRoute,
 }
 
 const AcademyRouteWithChildren =

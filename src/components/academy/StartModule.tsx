@@ -116,19 +116,17 @@ export function StartModule() {
       return { ...s, diag, area: areaId };
     });
 
+  const evaluationContext = {
+    ...(area?.palavras === undefined ? {} : { palavras: area.palavras }),
+    ...(trilha?.papel === undefined ? {} : { papelSugerido: trilha.papel }),
+  };
+
   const runEval = () => {
-    const result = evaluateStart(st.promptText, {
-      palavras: area?.palavras,
-      papelSugerido: trilha?.papel,
-    });
+    const result = evaluateStart(st.promptText, evaluationContext);
     setEv(result);
     patch((s) => ({ ...s, evalTotal: result.total, evalTier: result.tier }));
   };
-  const currentEv =
-    ev ??
-    (evaluated
-      ? evaluateStart(st.promptText, { palavras: area?.palavras, papelSugerido: trilha?.papel })
-      : null);
+  const currentEv = ev ?? (evaluated ? evaluateStart(st.promptText, evaluationContext) : null);
 
   const saveProfile = () => {
     if (!trilha) return;

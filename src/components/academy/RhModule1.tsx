@@ -516,7 +516,7 @@ export function RhModule1() {
             ref: `${U3_GABARITO} ${U3_CRITERIO}`,
             pontos: U3_PONTOS,
           }}
-          state={s.livres.u3}
+          state={s.livres["u3"]}
           patch={patch}
           noTextarea
           ready={briefingOk}

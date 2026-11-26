@@ -2,6 +2,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import type { AreaId } from "./areas";
 import { AREA_BY_ID } from "./areas";
 import { MODULES } from "./course";
+import { m1Progress, type M1State } from "./modulo1-logic";
+import { rhProgress, type RhState } from "./rh1-logic";
 
 export type Level = "iniciante" | "intermediario" | "avancado";
 export type PromptStatus = "rascunho" | "em teste" | "aprovado" | "arquivado";
@@ -32,7 +34,46 @@ export interface SavedPrompt {
   status: PromptStatus;
 }
 
+export interface StartState {
+  /** Etapa atual (0 a 11) e a mais avançada já liberada. */
+  step: number;
+  max: number;
+  diag: Record<string, string | string[]>;
+  area?: AreaId | undefined;
+  /** id do fundamento -> opção marcada. */
+  fund: Record<string, number>;
+  /** índice da situação -> opção marcada. */
+  mini: Record<number, number>;
+  task: string;
+  promptText: string;
+  evalTotal?: number | undefined;
+  evalTier?: string | undefined;
+  perfil: string;
+  profileSaved: boolean;
+  checks: Record<number, boolean>;
+  done: boolean;
+  doneAt?: string | undefined;
+}
+
+export const EMPTY_START: StartState = {
+  step: 0,
+  max: 0,
+  diag: {},
+  fund: {},
+  mini: {},
+  task: "",
+  promptText: "",
+  perfil: "",
+  profileSaved: false,
+  checks: {},
+  done: false,
+};
+
 export interface AcademyState {
+  start?: StartState;
+  m1?: M1State;
+  /** Trilha RH e Gestão de Pessoas — Módulo 1 (namespace próprio, separado do Módulo 1 genérico). */
+  rh1?: RhState;
   profile?: Profile;
   /** taskId -> pontos (0 a 100) */
   done: Record<string, number>;
@@ -58,6 +99,9 @@ const EMPTY: AcademyState = {
 
 let state: AcademyState = EMPTY;
 let loaded = false;
+/** Resultado real da última gravação no navegador. */
+let saveStatus: "none" | "ok" | "fail" = "none";
+export const getSaveStatus = () => saveStatus;
 const listeners = new Set<() => void>();
 
 function load() {
@@ -80,8 +124,10 @@ export function updateAcademy(fn: (s: AcademyState) => AcademyState) {
   state = fn(state);
   try {
     window.localStorage.setItem(KEY, JSON.stringify(state));
+    // confirma que a gravação realmente aconteceu
+    saveStatus = window.localStorage.getItem(KEY) ? "ok" : "fail";
   } catch {
-    /* sem persistência: mantém em memória */
+    saveStatus = "fail";
   }
   emit();
 }
@@ -115,8 +161,50 @@ export function useAcademy() {
 
 /* ------------------------------ progresso ------------------------------ */
 
+/** Trilha efetiva do aluno: troca explícita no Módulo 1, perfil ou escolha no Módulo Start. */
+export function effectiveArea(s: AcademyState): AreaId | undefined {
+  return s.m1?.areaOverride ?? s.profile?.area ?? s.start?.area;
+}
+
 export function moduleProgress(n: number, s: AcademyState) {
   const m = MODULES[n]!;
+  if (n === 1 && effectiveArea(s) === "rh") {
+    const p = rhProgress(s.rh1);
+    return {
+      tasks: 0,
+      checks: 0,
+      deliverable: p.complete,
+      total: 8,
+      doneUnits: p.doneUnits,
+      complete: p.complete,
+      percent: p.percent,
+    };
+  }
+  if (n === 1) {
+    const p = m1Progress(s.m1, s.profile?.area);
+    return {
+      tasks: 0,
+      checks: 0,
+      deliverable: p.complete,
+      total: 8,
+      doneUnits: p.doneUnits,
+      complete: p.complete,
+      percent: p.percent,
+    };
+  }
+  if (n === 0) {
+    const st = s.start ?? EMPTY_START;
+    const percent = st.done ? 100 : Math.round((Math.min(st.max, 11) / 12) * 100);
+    return {
+      tasks: 0,
+      checks: 0,
+      deliverable: st.done,
+      total: 12,
+      doneUnits: st.done ? 12 : Math.min(st.max, 11),
+      complete: st.done,
+      percent,
+    };
+  }
   const tasks = m.tasks.filter((t) => (s.done[t.id] ?? 0) > 0).length;
   const checks = m.checklist.filter((_, i) => s.checks[`${n}:${i}`]).length;
   const deliverable = (s.deliverables[n] ?? "").trim().length >= 60;
@@ -134,6 +222,7 @@ export function moduleProgress(n: number, s: AcademyState) {
 }
 
 export function isUnlocked(n: number, s: AcademyState) {
+  if (n === 0) return true;
   if (!s.profile) return false;
   return n === 0 || moduleProgress(n - 1, s).complete;
 }
@@ -158,7 +247,7 @@ export function certification(s: AcademyState) {
   const approved = s.prompts.filter((p) => p.status === "aprovado");
   const withResult = approved.filter((p) => p.result.trim().length >= 20);
   const rules = [
-    { label: "Módulo 0 e as 8 semanas concluídos", ok: o.completed === MODULES.length },
+    { label: "Módulo Start e as 8 semanas concluídos", ok: o.completed === MODULES.length },
     {
       label: `Pelo menos ${MIN_APPROVED_PROMPTS} prompts aprovados na biblioteca (${approved.length} agora)`,
       ok: approved.length >= MIN_APPROVED_PROMPTS,

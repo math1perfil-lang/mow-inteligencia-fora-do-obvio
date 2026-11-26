@@ -47,10 +47,10 @@ function AcademyHome() {
         </p>
         <div className="mt-10 flex flex-wrap gap-3">
           <Link
-            to={started ? "/academy/painel" : "/academy/diagnostico"}
+            to={started ? "/academy/painel" : "/academy/start"}
             className="inline-flex min-h-12 items-center bg-foreground px-6 text-sm font-medium text-background hover:opacity-90"
           >
-            {started ? `Continuar (${o.percent}%)` : "Começar pelo diagnóstico"}
+            {started ? `Continuar (${o.percent}%)` : "Iniciar o Módulo Start"}
           </Link>
           <a
             href="#trilha"
@@ -60,7 +60,7 @@ function AcademyHome() {
           </a>
         </div>
         <p className="mt-6 text-sm text-muted-foreground">
-          Módulo 0 + 8 semanas · cerca de 11 horas de prática guiada · sem cadastro, o progresso
+          Módulo Start + 8 semanas · cerca de 11 horas de prática guiada · sem cadastro, o progresso
           fica no seu navegador.
         </p>
       </section>
@@ -88,7 +88,7 @@ function AcademyHome() {
           {MODULES.map((m) => (
             <li key={m.n} className="grid gap-2 border-b border-border py-5 md:grid-cols-12">
               <span className="eyebrow text-muted-foreground md:col-span-2">
-                {m.n === 0 ? "Módulo 0" : `Semana ${m.n}`}
+                {m.n === 0 ? "Módulo Start" : m.n === 1 ? "Módulo 1" : `Semana ${m.n}`}
               </span>
               <div className="md:col-span-10">
                 <h3 className="text-xl font-medium tracking-tight">{m.title}</h3>

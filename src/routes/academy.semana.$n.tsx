@@ -1,10 +1,18 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
+import { Module1 } from "@/components/academy/Module1";
+import { RhModule1 } from "@/components/academy/RhModule1";
 import { GovernanceRules } from "@/components/academy/GovernanceRules";
 import { TaskRunner } from "@/components/academy/TaskRunner";
 import { Textarea } from "@/components/ui/textarea";
 import { AREA_BY_ID } from "@/lib/academy/areas";
 import { MODULES } from "@/lib/academy/course";
-import { isUnlocked, moduleProgress, updateAcademy, useAcademy } from "@/lib/academy/store";
+import {
+  effectiveArea,
+  isUnlocked,
+  moduleProgress,
+  updateAcademy,
+  useAcademy,
+} from "@/lib/academy/store";
 
 export const Route = createFileRoute("/academy/semana/$n")({ component: WeekPage });
 
@@ -13,6 +21,7 @@ function WeekPage() {
   const idx = Number(n);
   const m = MODULES[idx];
   const { state, ready } = useAcademy();
+  if (idx === 0) return <Navigate to="/academy/start" />;
   if (!m)
     return (
       <p>
@@ -27,7 +36,7 @@ function WeekPage() {
     return (
       <p>
         Faça o{" "}
-        <Link to="/academy/diagnostico" className="underline underline-offset-4">
+        <Link to="/academy/start" className="underline underline-offset-4">
           diagnóstico
         </Link>{" "}
         para liberar sua trilha.
@@ -38,7 +47,7 @@ function WeekPage() {
       <div className="max-w-xl">
         <h1 className="display text-4xl">Etapa bloqueada.</h1>
         <p className="mt-4 text-muted-foreground">
-          Conclua {idx === 1 ? "o Módulo 0" : `a Semana ${idx - 1}`} (tarefas, checklist e
+          Conclua {idx === 1 ? "o Módulo Start" : `a Semana ${idx - 1}`} (tarefas, checklist e
           entregável) para liberar esta etapa.
         </p>
         <Link to="/academy/painel" className="mt-6 inline-block underline underline-offset-4">
@@ -47,6 +56,7 @@ function WeekPage() {
       </div>
     );
   }
+  if (idx === 1) return effectiveArea(state) === "rh" ? <RhModule1 /> : <Module1 />;
   const area = AREA_BY_ID[state.profile.area];
   const pr = moduleProgress(idx, state);
   const nextOpen = idx < MODULES.length - 1;
@@ -54,7 +64,7 @@ function WeekPage() {
     <article className="mx-auto max-w-3xl space-y-14">
       <header>
         <p className="eyebrow text-muted-foreground">
-          {idx === 0 ? "Módulo 0" : `Semana ${idx}`} · {area.name} · ~{m.minutes} min
+          {idx === 0 ? "Módulo Start" : `Semana ${idx}`} · {area.name} · ~{m.minutes} min
         </p>
         <h1 className="display mt-4 text-[clamp(2.2rem,6vw,4rem)]">{m.title}</h1>
         <div className="mt-6 h-1 bg-border">

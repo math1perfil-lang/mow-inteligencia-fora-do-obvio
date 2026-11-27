@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ClientSolutionReleasePanel } from "@/components/method-factory/ClientSolutionReleasePanel";
+import { SourceCatalogImportPanel } from "@/components/method-factory/SourceCatalogImportPanel";
 import {
   recordSourceRightsReview,
   searchSourceRightsForReview,
@@ -1323,6 +1324,7 @@ export function OpenAlexDiscoveryPage({ initialBriefId = "" }: { initialBriefId?
       </section>
 
       <SourceRightsReviewPanel key={`${access.userId}:${access.version}`} />
+      <SourceCatalogImportPanel key={`catalog:${access.userId}:${access.version}`} />
       <MethodDraftPanel
         key={`${access.userId}:${access.version}:${initialBriefId}`}
         briefId={draft.sourceBriefId}

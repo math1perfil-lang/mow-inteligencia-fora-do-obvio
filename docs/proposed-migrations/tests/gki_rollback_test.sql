@@ -1,0 +1,16 @@
+-- Teste descartável da migração GKI. Termina SEMPRE com exceção (desfaz tudo); o resultado vem
+-- na mensagem "RESULTADOS: ...". Como rodar, numa só chamada, em um projeto Supabase VAZIO:
+--   1) begin;
+--   2) stubs mínimos da migração de intake (3 linhas abaixo);
+--   3) o corpo de 20261127000000_method_factory_gki.sql sem begin/commit;
+--   4) o bloco "do $test$" cujo conteúdo está resumido abaixo.
+-- Stubs:
+--   create table public.mow_factory_operators (user_id uuid primary key references auth.users (id) on delete cascade, active boolean not null default true);
+--   create table public.mow_factory_briefs (id uuid primary key default gen_random_uuid());
+--   create function public.mow_factory_is_active_operator() returns boolean language sql stable security definer set search_path = ''
+--     as $$ select exists (select 1 from public.mow_factory_operators o where o.user_id = (select auth.uid()) and o.active); $$;
+-- Cenários verificados em 2026-11-27 (todos passaram): iniciar execução; listar; reserva exclusiva
+-- (segunda reserva falha com 55P03; liberar duas vezes retorna true e depois false); execução
+-- inexistente (P0002); busca por título (curinga % tratado como literal; sem resultado = 0);
+-- revisão de direitos versionada (v1, v2; a busca devolve a última); status inventado recusado
+-- (23514); gravação do rascunho; usuário que não é operador e anônimo recebem 42501.

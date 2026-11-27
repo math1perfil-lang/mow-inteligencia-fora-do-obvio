@@ -15,3 +15,10 @@ Cobre 8 das 21 funções que o código chama: operador, convites, envio do brief
 - Se o banco do app já tiver funções com esses nomes, aplicar isto sobrescreve (`create or replace`). Conferir antes.
 - Ninguém grava em `mow_factory_analysis_runs` no código atual; a tabela só serve à leitura.
 - Falta revisar RLS, grants e o isolamento do convite (item D do `TODO.md`).
+
+## `20261127000000_method_factory_gki.sql`
+As 7 funções `gki_*`: execuções de pesquisa, reserva exclusiva da busca externa, fila e registro de revisões de direitos, e gravação do rascunho do método. Depende da migração de intake acima.
+
+- **Direitos das fontes:** por decisão do dono, a proposta só **registra** a decisão informada (versionada por fonte). Não há regra que bloqueie uma fonte com direito pendente, restrito ou revogado. Se isso for desejado depois, precisa ser acrescentado.
+- **Teste:** rodada em 2026-11-27 em transação desfeita num projeto Supabase vazio (ver `tests/gki_rollback_test.sql`); todos os cenários listados lá passaram e o projeto continuou sem tabelas. Para isolar o teste, a migração de intake foi substituída por 3 stubs mínimos. As duas migrações juntas, na ordem, não foram testadas em conjunto contra o banco real.
+- **Não coberto:** nada no código atual grava em `gki_sources`, então a busca só devolve fontes inseridas manualmente. A aprovação do método e a entrega ao cliente (5 funções `mow_factory_*_client_solution_*` e `approve_method_version`) continuam sem SQL.

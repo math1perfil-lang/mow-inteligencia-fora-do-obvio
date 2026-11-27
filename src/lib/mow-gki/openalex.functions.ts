@@ -142,6 +142,10 @@ async function loadBriefReview(rpc: GkiRpc, briefId: string): Promise<Record<str
   });
   const record = recordOf(Array.isArray(data) ? data[0] : data);
   if (error || !record) throw new Error("BRIEF_UNAVAILABLE");
+  // A revisão devolve as dores em "pain_points"; o fluxo do rascunho lê "pains".
+  if (!Array.isArray(record["pains"]) && Array.isArray(record["pain_points"])) {
+    return { ...record, pains: record["pain_points"] };
+  }
   return record;
 }
 

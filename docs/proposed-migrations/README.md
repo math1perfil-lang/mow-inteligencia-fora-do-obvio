@@ -22,3 +22,10 @@ As 7 funções `gki_*`: execuções de pesquisa, reserva exclusiva da busca exte
 - **Direitos das fontes:** por decisão do dono, a proposta só **registra** a decisão informada (versionada por fonte). Não há regra que bloqueie uma fonte com direito pendente, restrito ou revogado. Se isso for desejado depois, precisa ser acrescentado.
 - **Teste:** rodada em 2026-11-27 em transação desfeita num projeto Supabase vazio (ver `tests/gki_rollback_test.sql`); todos os cenários listados lá passaram e o projeto continuou sem tabelas. Para isolar o teste, a migração de intake foi substituída por 3 stubs mínimos. As duas migrações juntas, na ordem, não foram testadas em conjunto contra o banco real.
 - **Não coberto:** nada no código atual grava em `gki_sources`, então a busca só devolve fontes inseridas manualmente. A aprovação do método e a entrega ao cliente (5 funções `mow_factory_*_client_solution_*` e `approve_method_version`) continuam sem SQL.
+
+## `20261127010000_method_factory_source_catalog.sql`
+O **acervo de fontes**: estende `gki_sources` (área, DOI, ano, idioma, autores, resumo, link aberto, licença, origem) e cria `gki_source_texts` para o texto completo. Quatro funções para operador ativo: importar em lote (até 100, sem duplicar por origem + id), guardar texto, ler texto e buscar no acervo (por palavras no título/resumo e por área). Depende das duas migrações anteriores.
+
+- **Teste:** transação desfeita num projeto Supabase vazio, 2026-11-27, com stubs mínimos para as dependências: reimportação sem duplicar, busca por título/resumo, filtro por área, curinga literal, guardar e reler texto, formato inválido e fonte inexistente recusados, não-operador e anônimo negados. Projeto continuou sem tabelas.
+- **Importador não existe ainda:** estas funções só guardam. Falta o código de servidor que busca na OpenAlex (o cliente já existe em `src/lib/mow-gki/server/openalex-client.ts`), traz resumos, preenche as áreas e baixa texto completo.
+- **Texto completo:** o banco aceita até 2 MB por fonte. Quais fontes terão texto e como extrair de PDF é decisão do importador, não do SQL.

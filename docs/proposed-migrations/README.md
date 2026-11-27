@@ -10,7 +10,7 @@ Cobre 8 das 21 funções que o código chama: operador, convites, envio do brief
 - As 7 funções `gki_*` (pesquisa, reservas, direitos das fontes, rascunho do método) e as 5 de entrega ao cliente. São maiores e dependem de decisões de modelo de dados e direitos autorais.
 
 **Limites desta proposta**
-- Nunca foi executada. Não havia Postgres no ambiente, então a sintaxe não foi validada.
+- Testada em 2026-11-27 num projeto Supabase vazio, dentro de uma transação desfeita (`tests/intake_review_rollback_test.sql`): sintaxe válida e fluxo completo OK (convite único, envio anônimo, bloqueio de reenvio, anon e não-operador negados, inbox, revisão, status). Depois do teste o projeto continuou sem tabelas. Ainda não testada contra o banco real do app.
 - Os formatos de retorno vêm do que o código lê, sem confirmação no banco real.
 - Se o banco do app já tiver funções com esses nomes, aplicar isto sobrescreve (`create or replace`). Conferir antes.
 - Ninguém grava em `mow_factory_analysis_runs` no código atual; a tabela só serve à leitura.

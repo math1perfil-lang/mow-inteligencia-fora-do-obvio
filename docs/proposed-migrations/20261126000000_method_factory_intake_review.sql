@@ -2,7 +2,7 @@
 -- Fica em docs/ de propósito: não está em supabase/migrations, então nada a executa sozinho.
 -- Escopo: só o caminho convite -> briefing -> revisão (8 funções). Não inclui GKI, entrega ao
 -- cliente nem aprovação de método (ver docs/method-factory-db-contract.md).
--- Não foi executada em nenhum Postgres: a sintaxe nunca foi validada.
+-- Validada em 2026-11-27 em transação desfeita (ver tests/). Não testada no banco real do app.
 -- Princípio: tabelas fechadas (RLS ligada, sem policies, sem grants); todo acesso é por função
 -- SECURITY DEFINER com search_path vazio.
 

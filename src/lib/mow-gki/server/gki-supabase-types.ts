@@ -63,6 +63,20 @@ type GkiDatabase = Omit<Database, "public"> & {
           restrictions_satisfied: boolean;
         }>;
       };
+      gki_upsert_sources_v1: {
+        Args: { p_domain: string; p_items: Json };
+        Returns: Array<{ out_source_id: string; out_record_id: string; out_inserted: boolean }>;
+      };
+      gki_store_source_text_v1: {
+        Args: {
+          p_source_id: string;
+          p_text: string;
+          p_format?: string;
+          p_license?: string | null;
+          p_origin_url?: string | null;
+        };
+        Returns: boolean;
+      };
       mow_factory_get_brief_review: {
         Args: { p_brief_id: string };
         Returns: Json;

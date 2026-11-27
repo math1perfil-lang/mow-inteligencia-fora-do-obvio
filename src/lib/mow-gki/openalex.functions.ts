@@ -2,7 +2,7 @@ import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { getSupabase } from "@/lib/supabase";
 import { z } from "zod";
 import { toOpenAlexFailureToken } from "./openalex-error-messages";
@@ -13,6 +13,8 @@ import {
   createOpenAlexDiscoveryService,
 } from "./server/openalex-discovery-service";
 import { OpenAlexClient } from "./server/openalex-client";
+import { PROBLEM_DOMAINS } from "@/lib/method-factory/brief-schema";
+import { importSourceCatalog, type FetchedText } from "./server/source-catalog-importer";
 import { ConfiguredSourceSearchClient } from "./server/configured-source-search-client";
 import { generateMethodDraft } from "./server/method-draft-service";
 import { retrieveAuthorizedMethodEvidence } from "./server/method-draft-evidence-retrieval";
@@ -489,4 +491,72 @@ export const generateMethodDraftForBrief = createServerFn({ method: "POST" })
     } catch (error) {
       throw new Error(toMethodDraftFailureToken(error));
     }
+  });
+
+const importSourceCatalogSchema = z
+  .object({
+    domain: z.enum(PROBLEM_DOMAINS),
+    queries: z.array(openAlexQuerySchema).min(1).max(10),
+    perQuery: z.number().int().min(1).max(25).default(10),
+    fullText: z.boolean().default(false),
+  })
+  .strict();
+
+async function downloadPublicText(url: string): Promise<FetchedText | null> {
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: "text/html,text/plain;q=0.9" },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) return null;
+    const declared = Number(response.headers.get("content-length") ?? 0);
+    const contentType = response.headers.get("content-type") ?? "";
+    if (declared > 5_000_000) {
+      return { contentType, body: "", byteLength: declared, finalUrl: response.url || url };
+    }
+    const body = await response.text();
+    return { contentType, body, byteLength: body.length, finalUrl: response.url || url };
+  } catch {
+    return null;
+  }
+}
+
+/** Importa obras da OpenAlex para o acervo de fontes (somente owner ativo). */
+export const importSourceCatalogForDomain = createServerFn({ method: "POST" })
+  .middleware(protectedGkiMiddleware)
+  .validator((input: unknown) => importSourceCatalogSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    setPrivateNoStoreHeaders();
+    const { rpc } = getVerifiedContext(context);
+    const apiKey = process.env["OPENALEX_API_KEY"]?.trim();
+    const client = new OpenAlexClient(apiKey ? { apiKey } : {});
+    return importSourceCatalog(
+      {
+        searchWorks: (query, options) => client.searchWorks(query, { perPage: options.perPage }),
+        upsertSources: async (domain, items) => {
+          const { data: rows, error } = await rpc.rpc("gki_upsert_sources_v1", {
+            p_domain: domain,
+            p_items: items as unknown as Json,
+          });
+          if (error || !Array.isArray(rows)) throw new Error("CATALOG_UPSERT_FAILED");
+          return rows.map((row) => ({
+            sourceId: row.out_source_id,
+            recordId: row.out_record_id,
+            inserted: row.out_inserted,
+          }));
+        },
+        fetchText: downloadPublicText,
+        storeText: async (input) => {
+          const { error } = await rpc.rpc("gki_store_source_text_v1", {
+            p_source_id: input.sourceId,
+            p_text: input.text,
+            p_format: input.format,
+            p_license: input.license,
+            p_origin_url: input.originUrl,
+          });
+          if (error) throw new Error("CATALOG_TEXT_FAILED");
+        },
+      },
+      data,
+    );
   });
